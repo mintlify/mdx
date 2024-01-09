@@ -1,4 +1,4 @@
-**@mintlify/mdx** is a thin layer on top of next-mdx-remote that provides a better developer experience for Next.js users by adding support for syntax highlighting.
+**@mintlify/mdx** is a thin layer on top of [next-mdx-remote](https://github.com/hashicorp/next-mdx-remote) that provides a better developer experience for Next.js users by adding support for syntax highlighting.
 
 ## Installation
 

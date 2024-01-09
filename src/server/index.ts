@@ -1,6 +1,6 @@
 import type { SerializeOptions } from "next-mdx-remote/dist/types";
-import type { MDXRemoteProps } from "next-mdx-remote/rsc";
 import { compileMDX } from "next-mdx-remote/rsc";
+import type { MDXRemoteProps } from "next-mdx-remote/rsc";
 import { serialize } from "next-mdx-remote/serialize";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
@@ -56,8 +56,40 @@ export const getCompiledMdx = async ({
 
 export const getCompiledServerMdx = async ({
   source,
-  options,
+  mdxOptions,
   components,
-}: MDXRemoteProps) => {
-  return await compileMDX({ source, options, components });
+  parseFrontmatter = true,
+}: {
+  source: MDXRemoteProps["source"];
+  mdxOptions?: SerializeOptions["mdxOptions"];
+  components?: MDXRemoteProps["components"];
+  parseFrontmatter?: SerializeOptions["parseFrontmatter"];
+}) => {
+  return await compileMDX({
+    source,
+    options: {
+      mdxOptions: {
+        remarkPlugins: [
+          remarkGfm,
+          remarkSmartypants,
+          remarkMath,
+          ...(mdxOptions?.remarkPlugins || []),
+        ],
+        rehypePlugins: [
+          rehypeKatex,
+          [
+            rehypeSyntaxHighlighting,
+            {
+              ignoreMissing: true,
+            },
+          ],
+          ...(mdxOptions?.rehypePlugins || []),
+        ],
+        format: "mdx",
+        useDynamicImport: true,
+      },
+      parseFrontmatter,
+    },
+    components,
+  });
 };

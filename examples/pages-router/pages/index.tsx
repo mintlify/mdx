@@ -26,6 +26,8 @@ export default function Home({
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <article className="prose mx-auto py-8">
+      <h1>{String(mdxSource.frontmatter.title)}</h1>
+
       <MDXComponent {...mdxSource} />
     </article>
   );

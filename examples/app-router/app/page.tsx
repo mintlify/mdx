@@ -1,4 +1,4 @@
-import { MDXServerComponent } from "@mintlify/mdx";
+import { getCompiledServerMdx } from "@mintlify/mdx";
 
 export default async function Home() {
   const fileContentResponse = await fetch(
@@ -6,23 +6,15 @@ export default async function Home() {
   );
   const fileContentData = await fileContentResponse.text();
 
-  // const { content, frontmatter } = await getCompiledServerMDX<{
-  //   title: string;
-  //   description: string;
-  // }>({
-  //   source: fileContentData,
-  //   options: { parseFrontmatter: true },
-  // });
-
-  // console.log({ content, frontmatter });
+  const { content, frontmatter } = await getCompiledServerMdx({
+    source: fileContentData,
+  });
 
   return (
-    <>
-      <article className="prose mx-auto py-8">
-        <MDXServerComponent source={fileContentData} />
-      </article>
+    <article className="prose mx-auto py-8">
+      <h1>{String(frontmatter.title)}</h1>
 
-      {/* <article className="prose mx-auto py-8">{content}</article> */}
-    </>
+      {content}
+    </article>
   );
 }

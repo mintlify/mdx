@@ -1,10 +1,11 @@
 import type { SerializeOptions } from "next-mdx-remote/dist/types";
+import type { MDXRemoteProps } from "next-mdx-remote/rsc";
+import { compileMDX } from "next-mdx-remote/rsc";
 import { serialize } from "next-mdx-remote/serialize";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkSmartypants from "remark-smartypants";
-import { MDXRemoteProps, compileMDX } from "next-mdx-remote/rsc";
 
 import { rehypeSyntaxHighlighting } from "../plugins/index.js";
 
@@ -53,13 +54,10 @@ export const getCompiledMdx = async ({
   }
 };
 
-export const getCompiledServerMDX = ({
+export const getCompiledServerMdx = async ({
   source,
   options,
   components,
-}: MDXRemoteProps) =>
-  compileMDX({
-    source,
-    options,
-    components,
-  });
+}: MDXRemoteProps) => {
+  return await compileMDX({ source, options, components });
+};

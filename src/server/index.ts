@@ -6,7 +6,6 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkSmartypants from "remark-smartypants";
-
 import { rehypeSyntaxHighlighting } from "../plugins/index.js";
 
 export const getCompiledMdx = async ({

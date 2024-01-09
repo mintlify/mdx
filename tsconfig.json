@@ -1,0 +1,15 @@
+{
+  "extends": "@mintlify/ts-config",
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "jsx": "react-jsx",
+    "target": "ES2021",
+    "outDir": "dist",
+    "declaration": true,
+    "moduleResolution": "node",
+    "module": "esnext",
+    "allowJs": true
+  },
+  "include": ["**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "dist"]
+}

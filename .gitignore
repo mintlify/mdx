@@ -1,0 +1,13 @@
+# NPM
+node_modules/
+.eslintcache
+yarn-error.log
+
+# Output
+dist/
+
+# Misc
+.DS_Store
+
+# TypeScript
+*.tsbuildinfo

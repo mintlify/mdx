@@ -13,6 +13,10 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mintlify/mdx.git"
+  },
   "scripts": {
     "prepare": "npm run build",
     "build": "tsc --project tsconfig.build.json && yarn copy:css",
@@ -26,7 +30,7 @@
     "copy:css": "cp -r ./src/styles/prism.css ./dist/styles.css"
   },
   "author": "Mintlify, Inc.",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
     "@mintlify/eslint-config": "^1.0.4",
     "@mintlify/eslint-config-typescript": "^1.0.9",

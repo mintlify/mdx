@@ -4,6 +4,10 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 You can check out the code at [https://github.com/mintlify/mdx/blob/main/examples/app-router/app/page.tsx](https://github.com/mintlify/mdx/blob/main/examples/app-router/app/page.tsx) to understand how to parse your markdown using [@mintlify/mdx](https://www.npmjs.com/package/@mintlify/mdx).
 
+## Demo
+
+You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/main/examples/app-router/app/page.tsx) at [https://mdx-app-router.vercel.app](https://mdx-app-router.vercel.app).
+
 ## How to use
 
 1. Call the `getCompiledServerMdx` function inside your async React Server Component which will give you the `frontmatter` and `content`.

@@ -4,6 +4,10 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 You can check out the code at [https://github.com/mintlify/mdx/blob/main/examples/pages-router/pages/index.tsx](https://github.com/mintlify/mdx/blob/main/examples/pages-router/pages/index.tsx) to understand how to parse your markdown using [@mintlify/mdx](https://www.npmjs.com/package/@mintlify/mdx).
 
+## Demo
+
+You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/main/examples/pages-router/pages/index.tsx) at [https://mdx-pages-router.vercel.app](https://mdx-pages-router.vercel.app).
+
 ## How to use
 
 1. Call the `getCompiledMdx` function inside `getStaticProps` and return the `mdxSource` object.

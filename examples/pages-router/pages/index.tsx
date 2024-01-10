@@ -8,7 +8,7 @@ export const getStaticProps = (async () => {
   );
   const fileContentData = await fileContentResponse.text();
 
-  const mdxSource = await getCompiledMdx({
+  const mdxSource = await getCompiledMdx<{ title: string }>({
     source: fileContentData,
   });
 
@@ -26,7 +26,7 @@ export default function Home({
 }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <article className="prose mx-auto py-8">
-      <h1>{String(mdxSource.frontmatter.title)}</h1>
+      <h1>{mdxSource.frontmatter.title}</h1>
 
       <MDXComponent {...mdxSource} />
     </article>

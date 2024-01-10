@@ -1,6 +1,6 @@
 import type { SerializeOptions } from "next-mdx-remote/dist/types";
 import { compileMDX } from "next-mdx-remote/rsc";
-import type { MDXRemoteProps } from "next-mdx-remote/rsc";
+import type { CompileMDXResult, MDXRemoteProps } from "next-mdx-remote/rsc";
 import { serialize } from "next-mdx-remote/serialize";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
@@ -38,8 +38,8 @@ export const getCompiledMdx = async ({
           ],
           ...(mdxOptions?.rehypePlugins || []),
         ],
-        format: "mdx",
-        useDynamicImport: true,
+        format: mdxOptions?.format || "mdx",
+        useDynamicImport: mdxOptions?.useDynamicImport || true,
       },
       scope,
       parseFrontmatter,
@@ -53,7 +53,9 @@ export const getCompiledMdx = async ({
   }
 };
 
-export const getCompiledServerMdx = async ({
+export const getCompiledServerMdx = async <
+  TFrontmatter = Record<string, unknown>,
+>({
   source,
   mdxOptions,
   components,
@@ -63,7 +65,7 @@ export const getCompiledServerMdx = async ({
   mdxOptions?: SerializeOptions["mdxOptions"];
   components?: MDXRemoteProps["components"];
   parseFrontmatter?: SerializeOptions["parseFrontmatter"];
-}) => {
+}): Promise<CompileMDXResult<TFrontmatter>> => {
   return await compileMDX({
     source,
     options: {
@@ -84,8 +86,8 @@ export const getCompiledServerMdx = async ({
           ],
           ...(mdxOptions?.rehypePlugins || []),
         ],
-        format: "mdx",
-        useDynamicImport: true,
+        format: mdxOptions?.format || "mdx",
+        useDynamicImport: mdxOptions?.useDynamicImport || true,
       },
       parseFrontmatter,
     },

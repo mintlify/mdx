@@ -145,10 +145,10 @@
     "@types/mdx" "^2.0.0"
     "@types/react" ">=16"
 
-"@mintlify/mdx@^0.0.38":
-  version "0.0.38"
-  resolved "https://registry.yarnpkg.com/@mintlify/mdx/-/mdx-0.0.38.tgz#56b861df14776e976a19fcdfee3b8b0b9b9ab1dc"
-  integrity sha512-9NuDojY4DNxMS5kDgMJq98cNTjSyzk4D4Svlbgjp9jQY/lzokB5FjoTdtP1ufnk6Pu1enuw62R+TBcXKeQOpLA==
+"@mintlify/mdx@^0.0.41":
+  version "0.0.41"
+  resolved "https://registry.yarnpkg.com/@mintlify/mdx/-/mdx-0.0.41.tgz#60b7897e1ed6087119f2bac0dbfa53f6f24e1cf0"
+  integrity sha512-w7rfjEVppLWb2TSDFR3UxDfMqw8ghW0C/yKIP/BttBiFDMdDJd39WRsDr80W84ZwPaVvwDoqsKs8s2iA3JPuGg==
   dependencies:
     hast-util-to-string "^2.0.0"
     next-mdx-remote "^4.4.1"

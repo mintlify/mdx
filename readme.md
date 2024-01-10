@@ -1,3 +1,43 @@
+<div align="center">
+  <a href="https://mintlify.com">
+    <img
+      src="https://res.cloudinary.com/mintlify/image/upload/v1665385627/logo-rounded_zuk7q1.svg"
+      alt="Mintlify Logo"
+      height="64"
+    />
+  </a>
+  <br />
+  <p>
+    <h3>
+      <b>
+        Mint
+      </b>
+    </h3>
+  </p>
+  <p>
+    <b>
+      Open source docs builder that's beautiful, fast, and easy to work with.
+    </b>
+  </p>
+  <p>
+
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen?logo=github)](https://mintlify.com/docs/contributing) [![Tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Fmintlify.com%2F)](https://twitter.com/intent/tweet?url=&text=Check%20out%20%40mintlify)
+
+  </p>
+
+  <p>
+    <a href="https://mintlify.com" target="_blank">
+      <img
+        src="https://mintlify.com/assets/og.png"
+        alt="Mintlify"
+        width="100%"
+      />
+    </a>
+  </p>
+</div>
+
+# Mintlify's markdown parser
+
 **@mintlify/mdx** is a thin layer on top of [next-mdx-remote](https://github.com/hashicorp/next-mdx-remote) that provides a better developer experience for Next.js users by adding support for syntax highlighting.
 
 ## Installation
@@ -47,7 +87,7 @@ pnpm add @mintlify/mdx
    }
    ```
 
-3. Import `@mintlify/mdx/dist/styles.css` inside your `_app.tsx` file.
+3. Import `@mintlify/mdx/dist/styles.css` inside your `_app.tsx` file. This file contains the styles for the code syntax highlighting.
 
    ```tsx
    import "@mintlify/mdx/dist/styles.css";
@@ -88,7 +128,7 @@ pnpm add @mintlify/mdx
    }
    ```
 
-2. Import `@mintlify/mdx/dist/styles.css` inside your `layout.tsx` file.
+2. Import `@mintlify/mdx/dist/styles.css` inside your `layout.tsx` file. This file contains the styles for the code syntax highlighting.
 
    ```tsx
    import type { Metadata } from "next";
@@ -194,3 +234,14 @@ import { MDXServerComponent } from "@mintlify/mdx";
   }
 />;
 ```
+
+<div align="center">
+  <p>
+    <sub>
+      Built with ❤︎ by
+      <a href="https://mintlify.com">
+        Mintlify
+      </a>
+    </sub>
+  </p>
+</div>

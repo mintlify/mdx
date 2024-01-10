@@ -145,10 +145,10 @@
     "@types/mdx" "^2.0.0"
     "@types/react" ">=16"
 
-"@mintlify/mdx@latest":
-  version "0.0.40"
-  resolved "https://registry.yarnpkg.com/@mintlify/mdx/-/mdx-0.0.40.tgz#6373a10253d039cadb58246255ab304f28139b0f"
-  integrity sha512-OyyFA7LptlFK1RdZujXhnxBY/Z+CKtuve+suMWaWBQh32PTMP7YlTIs6YPeL0cN8Bxhw6EDSeHEfkrg1LWN8jw==
+"@mintlify/mdx@^0.0.42":
+  version "0.0.42"
+  resolved "https://registry.yarnpkg.com/@mintlify/mdx/-/mdx-0.0.42.tgz#d09e4deab280b57dc146e413f78c7307dc77dab8"
+  integrity sha512-D9zypPzux1f6I6WpcVs4K8Ruh8dPFxVJZibo1RHcsLORDtXjgXZ7jvZr2Ag1kYhiMS2xmDQbE9zkx0EV+s1DpQ==
   dependencies:
     hast-util-to-string "^2.0.0"
     next-mdx-remote "^4.4.1"
@@ -2810,7 +2810,7 @@ next-mdx-remote@^4.4.1:
     vfile "^5.3.0"
     vfile-matter "^3.0.1"
 
-next@latest:
+next@14.0.4:
   version "14.0.4"
   resolved "https://registry.yarnpkg.com/next/-/next-14.0.4.tgz#bf00b6f835b20d10a5057838fa2dfced1d0d84dc"
   integrity sha512-qbwypnM7327SadwFtxXnQdGiKpkuhaRLE2uq62/nRul9cj9KhQ5LhHmlziTNqUidZotw/Q1I9OjirBROdUJNgA==

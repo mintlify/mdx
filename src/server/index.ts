@@ -2,7 +2,6 @@ import type { SerializeOptions } from "next-mdx-remote/dist/types";
 import { compileMDX } from "next-mdx-remote/rsc";
 import type { CompileMDXResult, MDXRemoteProps } from "next-mdx-remote/rsc";
 import { serialize } from "next-mdx-remote/serialize";
-import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkSmartypants from "remark-smartypants";
@@ -29,7 +28,6 @@ export const getCompiledMdx = async ({
           ...(mdxOptions?.remarkPlugins || []),
         ],
         rehypePlugins: [
-          rehypeKatex,
           [
             rehypeSyntaxHighlighting,
             {
@@ -77,7 +75,6 @@ export const getCompiledServerMdx = async <
           ...(mdxOptions?.remarkPlugins || []),
         ],
         rehypePlugins: [
-          rehypeKatex,
           [
             rehypeSyntaxHighlighting,
             {

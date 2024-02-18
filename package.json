@@ -46,6 +46,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
+    "@theguild/remark-mermaid": "^0.0.6",
     "hast-util-to-string": "^2.0.0",
     "next-mdx-remote": "^4.4.1",
     "refractor": "^4.8.0",

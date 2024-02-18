@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkSmartypants from "remark-smartypants";
 import { rehypeSyntaxHighlighting } from "../plugins/index.js";
+import { remarkMermaid } from "@theguild/remark-mermaid";
 
 export const getCompiledMdx = async ({
   source,
@@ -26,6 +27,7 @@ export const getCompiledMdx = async ({
           remarkGfm,
           remarkSmartypants,
           remarkMath,
+          remarkMermaid,
           ...(mdxOptions?.remarkPlugins || []),
         ],
         rehypePlugins: [

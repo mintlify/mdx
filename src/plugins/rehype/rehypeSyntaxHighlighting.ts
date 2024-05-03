@@ -91,7 +91,7 @@ function highlight(node: any, lang: string) {
   }
 
   const code = node.children[0].value;
-  // https://regex101.com/r/RWKM9E/1
+  // https://regex101.com/r/RWKM9E
   const regex = /(?:[ \t])?\{([^}\s][^}]*)\}/g;
   const matches = node.data.meta.match(regex);
   if (!matches || !matches.length) {

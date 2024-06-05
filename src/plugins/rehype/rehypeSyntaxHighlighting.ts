@@ -5,6 +5,15 @@ import { RefractorElement, refractor } from 'refractor/lib/all.js';
 import { Parent } from 'unist';
 import { visit } from 'unist-util-visit';
 
+type TreeNode = Node & {
+  value?: string;
+  tagName: string;
+  children?: TreeNode[];
+  properties: {
+    className?: string[];
+  };
+};
+
 export const rehypeSyntaxHighlighting = (options: {
   ignoreMissing?: boolean;
   alias?: Record<string, string[]>;
@@ -18,13 +27,7 @@ export const rehypeSyntaxHighlighting = (options: {
       tree,
       'element',
       (
-        node: Node & {
-          tagName: string;
-          children: Node[];
-          properties: {
-            className?: string[];
-          };
-        },
+        node: TreeNode,
         _index,
         parent?: {
           tagName: string;
@@ -49,6 +52,7 @@ export const rehypeSyntaxHighlighting = (options: {
             'language-' + lang
           );
           result = highlight(node, lang);
+          //@ts-expect-error unable to import type yet
           node.children = result;
         } catch (err) {
           if (options.ignoreMissing && /Unknown language/.test((err as Error).message)) {
@@ -61,15 +65,7 @@ export const rehypeSyntaxHighlighting = (options: {
   };
 };
 
-function getLanguage(
-  node: Node & {
-    tagName: string;
-    children: Node[];
-    properties: {
-      className?: string[];
-    };
-  }
-) {
+function getLanguage(node: TreeNode) {
   const className = node.properties.className || [];
 
   for (const classListItem of className) {
@@ -81,9 +77,9 @@ function getLanguage(
   return null;
 }
 
-function highlight(node: any, lang: string) {
+function highlight(node: TreeNode, lang: string) {
   // current code components only have 1 child
-  if (!node.children || !node.children.length || !node.children[0].value) {
+  if (!node.children || !node.children.length || !node.children[0]?.value) {
     return node;
   }
   if (!node.data || !node.data.meta) {
@@ -93,7 +89,7 @@ function highlight(node: any, lang: string) {
   const code = node.children[0].value;
   // https://regex101.com/r/RWKM9E
   const regex = /(?:[ \t])?\{([^}\s][^}]*)\}/g;
-  const matches = node.data.meta.match(regex);
+  const matches = node.data.meta.toString().match(regex);
   if (!matches || !matches.length) {
     return refractor.highlight(toString(node), lang).children;
   }

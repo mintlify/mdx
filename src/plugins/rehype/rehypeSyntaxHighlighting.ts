@@ -1,7 +1,7 @@
 import { Node, toString } from "hast-util-to-string";
 import { refractor } from "refractor/lib/all.js";
-import { visit } from "unist-util-visit";
 import { Parent } from "unist";
+import { visit } from "unist-util-visit";
 
 export const rehypeSyntaxHighlighting = (options: {
   ignoreMissing?: boolean;
@@ -10,6 +10,7 @@ export const rehypeSyntaxHighlighting = (options: {
   if (options.alias) {
     refractor.alias(options.alias);
   }
+  
 
   return (tree: Parent) => {
     visit(
@@ -31,6 +32,8 @@ export const rehypeSyntaxHighlighting = (options: {
           };
         }
       ) => {
+        console.log(node);
+        
         if (!parent || parent.tagName !== "pre" || node.tagName !== "code") {
           return;
         }

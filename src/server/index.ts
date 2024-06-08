@@ -6,7 +6,7 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import remarkSmartypants from "remark-smartypants";
 import { rehypeSyntaxHighlighting } from "../plugins/index.js";
-import { SerializeOptions } from "../types/index.js";
+import type { SerializeOptions } from "../types/index.js";
 
 export const getCompiledMdx = async ({
   source,

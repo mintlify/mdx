@@ -1,7 +1,14 @@
-import { Node, toString } from "hast-util-to-string";
+import { toString } from "hast-util-to-string";
 import { refractor } from "refractor/lib/all.js";
 import { visit } from "unist-util-visit";
-import { Parent } from "unist";
+import { Node, Parent } from "unist";
+import { Element } from "hast";
+
+const languagePrefix = "language-";
+
+function isElement(node: Node): node is Element {
+  return node.type === "element";
+}
 
 export const rehypeSyntaxHighlighting = (options: {
   ignoreMissing?: boolean;
@@ -12,70 +19,59 @@ export const rehypeSyntaxHighlighting = (options: {
   }
 
   return (tree: Parent) => {
-    visit(
-      tree,
-      "element",
-      (
-        node: Node & {
-          tagName: string;
-          children: Node[];
-          properties: {
-            className?: string[];
-          };
-        },
-        _index,
-        parent?: {
-          tagName: string;
-          properties: {
-            className?: string[];
-          };
-        }
-      ) => {
-        if (!parent || parent.tagName !== "pre" || node.tagName !== "code") {
-          return;
-        }
-
-        const lang = getLanguage(node);
-
-        if (lang === null) {
-          return;
-        }
-
-        let result;
-        try {
-          parent.properties.className = (
-            parent.properties.className || []
-          ).concat("language-" + lang);
-          result = refractor.highlight(toString(node), lang);
-          node.children = result.children;
-        } catch (err) {
-          if (
-            options.ignoreMissing &&
-            /Unknown language/.test((err as Error).message)
-          ) {
-            return;
-          }
-          throw err;
-        }
+    visit(tree, isElement, (node, _, parent) => {
+      if (
+        !parent ||
+        !isElement(parent) ||
+        parent.tagName !== "pre" ||
+        node.tagName !== "code"
+      ) {
+        return;
       }
-    );
+
+      const lang = getLanguage(node);
+
+      if (lang === null) {
+        return;
+      }
+
+      try {
+        const existingClassName = parent.properties.className ?? [];
+        if (Array.isArray(existingClassName)) {
+          parent.properties.className = [
+            ...existingClassName,
+            languagePrefix + lang,
+          ];
+        }
+        const result = refractor.highlight(toString(node), lang);
+
+        // @ts-expect-error refractor uses outdated version of @types/hast
+        node.children = result.children;
+      } catch (err) {
+        if (
+          options.ignoreMissing &&
+          /Unknown language/.test((err as Error).message)
+        ) {
+          return;
+        }
+        throw err;
+      }
+    });
   };
 };
 
-function getLanguage(
-  node: Node & {
-    tagName: string;
-    children: Node[];
-    properties: {
-      className?: string[];
-    };
-  }
-) {
+function getLanguage(node: Element) {
   const className = node.properties.className || [];
+  if (!Array.isArray(className)) {
+    return null;
+  }
 
   for (const classListItem of className) {
-    if (classListItem.slice(0, 9) === "language-") {
-      return classListItem.slice(9).toLowerCase();
+    if (
+      typeof classListItem === "string" &&
+      classListItem.startsWith(languagePrefix)
+    ) {
+      return classListItem.slice(languagePrefix.length).toLowerCase();
     }
   }
 

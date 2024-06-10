@@ -22,6 +22,7 @@ export const getCompiledMdx = async ({
   try {
     const serializedResponse = await serialize(source, {
       mdxOptions: {
+        ...mdxOptions,
         remarkPlugins: [
           remarkGfm,
           remarkSmartypants,

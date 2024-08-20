@@ -14,6 +14,9 @@ type TreeNode = Node & {
   };
 };
 
+// https://regex101.com/r/RWKM9E
+const highlightRangesRegex = /(?:[ \t])?\{([^}\s][^}]*)\}/g;
+
 export const rehypeSyntaxHighlighting = (options: {
   ignoreMissing?: boolean;
   alias?: Record<string, string[]>;
@@ -54,6 +57,9 @@ export const rehypeSyntaxHighlighting = (options: {
           result = highlight(node, lang);
           //@ts-expect-error unable to import type yet
           node.children = result;
+          // remove highlight ranges from meta so it is excluded from the filename for codeblocks
+          if (node.data?.meta && typeof node.data.meta === 'string')
+            node.data.meta = node.data.meta.replace(highlightRangesRegex, '');
         } catch (err) {
           if (options.ignoreMissing && /Unknown language/.test((err as Error).message)) {
             return;
@@ -87,9 +93,8 @@ function highlight(node: TreeNode, lang: string) {
   }
 
   const code = node.children[0].value.replace(/\n$/, '');
-  // https://regex101.com/r/RWKM9E
-  const regex = /(?:[ \t])?\{([^}\s][^}]*)\}/g;
-  const matches = node.data.meta.toString().match(regex);
+
+  const matches = node.data.meta.toString().match(highlightRangesRegex);
   if (!matches || !matches.length) {
     return refractor.highlight(toString(node), lang).children;
   }

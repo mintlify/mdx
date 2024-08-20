@@ -86,7 +86,7 @@ function highlight(node: TreeNode, lang: string) {
     return refractor.highlight(toString(node), lang).children;
   }
 
-  const code = node.children[0].value;
+  const code = node.children[0].value.replace(/\n$/, '');
   // https://regex101.com/r/RWKM9E
   const regex = /(?:[ \t])?\{([^}\s][^}]*)\}/g;
   const matches = node.data.meta.toString().match(regex);

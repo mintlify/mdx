@@ -1,4 +1,6 @@
 import type { MDXRemoteSerializeResult } from 'next-mdx-remote';
-import type { SerializeOptions } from 'next-mdx-remote/dist/types';
+import type { serialize } from 'next-mdx-remote/serialize';
 
-export { MDXRemoteSerializeResult as MDXCompiledResult, SerializeOptions };
+type SerializeOptions = NonNullable<Parameters<typeof serialize>[1]>;
+
+export type { MDXRemoteSerializeResult as MDXCompiledResult, SerializeOptions };

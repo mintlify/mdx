@@ -261,15 +261,37 @@ code.language-toml .table {
 /*********************************************************
 * Line highlighting
 */
-pre[class*='language-'] > code[class*='language-'] {
-  position: relative;
-  z-index: 1;
+pre[class*='language-'] {
+  padding: 0.5rem;
+  box-sizing: border-box;
+  overflow-x: auto; 
+  width: 100%; 
+}
+
+pre[class*='language-'] .line {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  white-space: pre-wrap; 
+  word-break: break-word; 
 }
 
 .line-highlight.line-highlight {
-  background: #f7ebc6;
-  box-shadow: inset 5px 0 0 #f7d87c;
+  background: hsl(var(--codeblock-line-highlight) / 0.3);
+  width: 100%;
+  /* padding: 0.2rem 0;  */
+  display: inline-block;
+  box-shadow: inset 2px 0 0 hsl(var(--codeblock-line-highlight)/1);
   z-index: 0;
+}
+
+.line-highlight:not(.line-highlight + .line-highlight) {
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
+}
+
+.line-highlight:not(:has(+ .line-highlight)) {
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
 pre[class^='language-diff-'] {

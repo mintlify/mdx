@@ -2,7 +2,7 @@ import { getCompiledServerMdx } from "@mintlify/mdx";
 
 export default async function Home() {
   const fileContentResponse = await fetch(
-    "https://raw.githubusercontent.com/mintlify/starter/main/essentials/code.mdx"
+    "https://gist.githubusercontent.com/deep93333/eb0c54f5b7496c6d17875b0ec4a55edd/raw/bca51b41e940393d50fafc78f14506130fe60b2c/code.mdx"
   );
   const fileContentData = await fileContentResponse.text();
 

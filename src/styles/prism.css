@@ -261,37 +261,33 @@ code.language-toml .table {
 /*********************************************************
 * Line highlighting
 */
-pre[class*='language-'] {
-  padding: 0.5rem;
-  box-sizing: border-box;
-  overflow-x: auto; 
-  width: 100%; 
-}
 
-pre[class*='language-'] .line {
-  padding-left: 0.5rem;
-  padding-right: 0.5rem;
-  white-space: pre-wrap; 
-  word-break: break-word; 
-}
-
-.line-highlight.line-highlight {
-  background: hsl(var(--codeblock-line-highlight) / 0.3);
+.line-highlight {
+  background: rgb(var(--primary-light) / 0.2);
   width: 100%;
-  /* padding: 0.2rem 0;  */
+  padding-top: 0.2rem;
+  padding-bottom: 0.2rem;
   display: inline-block;
-  box-shadow: inset 2px 0 0 hsl(var(--codeblock-line-highlight)/1);
+  position: relative;
   z-index: 0;
 }
 
-.line-highlight:not(.line-highlight + .line-highlight) {
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
+.line-highlight::before,
+.line-highlight::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1rem;
+  background: rgb(var(--primary-light) / 0.2);
 }
 
-.line-highlight:not(:has(+ .line-highlight)) {
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
+.line-highlight::before {
+  left: -1rem;
+  border-left: 4px solid rgb(var(--primary-light)/1);
+}
+.line-highlight::after {
+  right: -1rem;
 }
 
 pre[class^='language-diff-'] {

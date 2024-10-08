@@ -4,6 +4,6 @@
 
 @layer base {
         :root {
-                --codeblock-line-highlight: 166 87% 31%;
+             --primary-light: 85 215 153;
         }
 }

@@ -192,24 +192,24 @@
 * Language Specific
 */
 
-pre[class*='language-javascript'],
-code[class*='language-javascript'],
-pre[class*='language-jsx'],
-code[class*='language-jsx'],
-pre[class*='language-typescript'],
-code[class*='language-typescript'],
-pre[class*='language-tsx'],
-code[class*='language-tsx'] {
+pre[class*="language-javascript"],
+code[class*="language-javascript"],
+pre[class*="language-jsx"],
+code[class*="language-jsx"],
+pre[class*="language-typescript"],
+code[class*="language-typescript"],
+pre[class*="language-tsx"],
+code[class*="language-tsx"] {
   color: #9cdcfe;
 }
 
-pre[class*='language-css'],
-code[class*='language-css'] {
+pre[class*="language-css"],
+code[class*="language-css"] {
   color: #ce9178;
 }
 
-pre[class*='language-html'],
-code[class*='language-html'] {
+pre[class*="language-html"],
+code[class*="language-html"] {
   color: #d4d4d4;
 }
 
@@ -274,7 +274,7 @@ code.language-toml .table {
 
 .line-highlight::before,
 .line-highlight::after {
-  content: '';
+  content: "";
   position: absolute;
   top: 0;
   bottom: 0;
@@ -284,24 +284,24 @@ code.language-toml .table {
 
 .line-highlight::before {
   left: -1rem;
-  border-left: 4px solid rgb(var(--primary-light)/1);
+  border-left: 4px solid rgb(var(--primary-light) / 1);
 }
 .line-highlight::after {
   right: -1rem;
 }
 
-pre[class^='language-diff-'] {
+pre[class^="language-diff-"] {
   display: flex;
   padding-left: 2.25rem;
   padding-right: 2.25rem;
 }
 
-pre[class^='language-diff-'] > code {
+pre[class^="language-diff-"] > code {
   flex: none;
   min-width: 100%;
 }
 
-pre[class^='language-diff-'] > code {
+pre[class^="language-diff-"] > code {
   flex: none;
   min-width: 100%;
 }

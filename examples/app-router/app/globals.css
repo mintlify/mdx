@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 @layer base {
-        :root {
-             --primary-light: 85 215 153;
-        }
+  :root {
+    --primary-light: 85 215 153;
+  }
 }

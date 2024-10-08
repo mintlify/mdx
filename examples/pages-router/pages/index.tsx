@@ -4,7 +4,9 @@ import { promises as fs } from "fs";
 import type { GetStaticProps, InferGetStaticPropsType } from "next";
 
 export const getStaticProps = (async () => {
-  const data = await fs.readFile(process.cwd() + '/examples/highlight-example.mdx');
+  const data = await fs.readFile(
+    process.cwd() + "/examples/highlight-example.mdx",
+  );
 
   const mdxSource = await getCompiledMdx({
     source: data.toString(),

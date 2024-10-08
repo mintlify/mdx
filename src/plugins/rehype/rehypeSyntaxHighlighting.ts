@@ -1,7 +1,7 @@
 import { toString } from "hast-util-to-string";
 import { RefractorElement } from "refractor";
 import { refractor } from "refractor/lib/all.js";
-import type { Plugin } from 'unified';
+import type { Plugin } from "unified";
 import { Parent } from "unist";
 import { visit } from "unist-util-visit";
 
@@ -26,9 +26,10 @@ export type TreeParent = Parent & {
 
 const lineHighlightPattern = /\{(.*?)\}/;
 
-export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?], TreeNode> = (
-  options = {}
-)  => {
+export const rehypeSyntaxHighlighting: Plugin<
+  [RehypeSyntaxHighlightingOptions?],
+  TreeNode
+> = (options = {}) => {
   if (options?.alias) {
     refractor.alias(options.alias);
   }
@@ -53,15 +54,13 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
           (acc: RefractorElement[], line: string, index: number) => {
             const isNotEmptyLine = line.trim() !== "";
             const isHighlighted = linesToHighlight.includes(index + 1); // Line numbers start from 1
-  
+
             if (isNotEmptyLine) {
               const node: TreeNode = {
                 type: "element",
                 tagName: "span",
                 properties: {
-                  className: [
-                    isHighlighted ? "line-highlight" : "",
-                  ],
+                  className: [isHighlighted ? "line-highlight" : ""],
                 },
                 children: refractor.highlight(line, lang).children,
               };
@@ -70,12 +69,12 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
               acc.push({ type: "text", value: line } as any);
             }
 
-            if(index < lines.length - 1) {
+            if (index < lines.length - 1) {
               acc.push({ type: "text", value: "\n" } as any);
             }
             return acc;
           },
-          []
+          [],
         );
 
         if (node.data?.meta) {
@@ -109,7 +108,6 @@ function getLanguage(node: TreeNode) {
   return null;
 }
 
-
 function getLinesToHighlight(node: TreeNode, maxLines: number): number[] {
   const meta = node.data?.meta?.toString();
   if (!meta) return [];
@@ -141,5 +139,5 @@ function getLinesToHighlight(node: TreeNode, maxLines: number): number[] {
 }
 
 function removeLineHighlightMeta(meta: string): string {
-  return meta.replace(lineHighlightPattern, '').trim();
+  return meta.replace(lineHighlightPattern, "").trim();
 }

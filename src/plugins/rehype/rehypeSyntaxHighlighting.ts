@@ -51,7 +51,8 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
 
         const nodes = lines.reduce((acc: RefractorElement[], line: string, index: number) => {
           const isNotEmptyLine = line.trim() !== '';
-          const isHighlighted = linesToHighlight.includes(index + 1); // Line numbers start from 1
+          // Line numbers start from 1
+          const isHighlighted = linesToHighlight.includes(index + 1); 
 
           if (isNotEmptyLine) {
             const node: TreeNode = {
@@ -75,7 +76,7 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
 
         if (node.data?.meta) {
           // remove line highlight meta
-          node.data.meta = removeLineHighlightMeta(node.data.meta.toString());
+          node.data.meta = (node.data.meta as string).replace(lineHighlightPattern, '').trim();
         }
 
         node.children = nodes;
@@ -118,12 +119,12 @@ function getLinesToHighlight(node: TreeNode, maxLines: number): number[] {
       return parsed > maxLines ? undefined : parsed;
     });
 
-    if (start === undefined) return;
+    if (!start) return;
     const endLine = end ?? start;
 
     if (endLine < start) return;
-
-    for (let i = start; i <= Math.min(endLine, maxLines); i++) {
+    const max = Math.min(endLine, maxLines);
+    for (let i = start; i <= max; i++) {
       lineNumbers.add(i);
     }
   });
@@ -131,6 +132,3 @@ function getLinesToHighlight(node: TreeNode, maxLines: number): number[] {
   return Array.from(lineNumbers).sort((a, b) => a - b);
 }
 
-function removeLineHighlightMeta(meta: string): string {
-  return meta.replace(lineHighlightPattern, '').trim();
-}

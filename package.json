@@ -34,7 +34,9 @@
   "devDependencies": {
     "@mintlify/eslint-config": "^1.0.4",
     "@mintlify/eslint-config-typescript": "^1.0.9",
+    "@mintlify/prettier-config": "^1.0.1",
     "@mintlify/ts-config": "^2.0.2",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/recommended": "1.x",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
@@ -44,6 +46,7 @@
     "eslint-config-prettier": "8.x",
     "eslint-plugin-unused-imports": "^3.x",
     "prettier": "^3.1.1",
+    "prettier-plugin-tailwindcss": "^0.6.8",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "rimraf": "^5.0.1",

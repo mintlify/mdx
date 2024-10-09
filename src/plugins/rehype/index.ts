@@ -1,1 +1,1 @@
-export * from "./rehypeSyntaxHighlighting.js";
+export * from './rehypeSyntaxHighlighting.js';

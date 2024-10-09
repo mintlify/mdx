@@ -262,6 +262,11 @@ code.language-toml .table {
 * Line highlighting
 */
 
+pre[class*='language-'] > code[class*='language-'] {
+  position: relative;
+  z-index: 1;
+}
+
 .line-highlight {
   background: rgb(var(--primary-light) / 0.2);
   width: 100%;

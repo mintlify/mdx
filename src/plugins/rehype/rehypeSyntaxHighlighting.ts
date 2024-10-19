@@ -30,7 +30,7 @@ const lineHighlightPattern = /\{(.*?)\}/;
 export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?], TreeNode> = (
   options = {}
 ) => {
-  if (options?.alias) {
+  if (options.alias) {
     refractor.alias(options.alias);
   }
 

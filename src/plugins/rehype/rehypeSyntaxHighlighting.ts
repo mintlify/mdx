@@ -1,7 +1,8 @@
 import { toString } from 'hast-util-to-string';
-import { RefractorElement } from 'refractor';
+import { RefractorElement, RefractorRoot } from 'refractor';
 import { refractor } from 'refractor/lib/all.js';
 import type { Plugin } from 'unified';
+import type { Node } from 'unist';
 import { Parent } from 'unist';
 import { visit } from 'unist-util-visit';
 
@@ -10,12 +11,12 @@ export type RehypeSyntaxHighlightingOptions = {
   alias?: Record<string, string[]>;
 };
 
-export type TreeNode = RefractorElement & {
-  type: 'element' | 'text';
-  properties: {
-    className?: string[];
+export type TreeNode = RefractorElement &
+  Node & {
+    properties: {
+      className?: string[];
+    };
   };
-};
 
 export type TreeParent = Parent & {
   tagName: string;
@@ -49,30 +50,33 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         const lines = code.split('\n');
         const linesToHighlight = getLinesToHighlight(node, lines.length);
 
-        const nodes = lines.reduce((acc: RefractorElement[], line: string, index: number) => {
-          const isNotEmptyLine = line.trim() !== '';
-          // Line numbers start from 1
-          const isHighlighted = linesToHighlight.includes(index + 1); 
+        const nodes = lines.reduce(
+          (acc: RefractorRoot['children'], line: string, index: number) => {
+            const isNotEmptyLine = line.trim() !== '';
+            // Line numbers start from 1
+            const isHighlighted = linesToHighlight.includes(index + 1);
 
-          if (isNotEmptyLine) {
-            const node: TreeNode = {
-              type: 'element',
-              tagName: 'span',
-              properties: {
-                className: [isHighlighted ? 'line-highlight' : ''],
-              },
-              children: refractor.highlight(line, lang).children,
-            };
-            acc.push(node);
-          } else {
-            acc.push({ type: 'text', value: line } as any);
-          }
+            if (isNotEmptyLine) {
+              const node: TreeNode = {
+                type: 'element',
+                tagName: 'span',
+                properties: {
+                  className: [isHighlighted ? 'line-highlight' : ''],
+                },
+                children: refractor.highlight(line, lang).children,
+              };
+              acc.push(node);
+            } else {
+              acc.push({ type: 'text', value: line });
+            }
 
-          if (index < lines.length - 1) {
-            acc.push({ type: 'text', value: '\n' } as any);
-          }
-          return acc;
-        }, []);
+            if (index < lines.length - 1) {
+              acc.push({ type: 'text', value: '\n' });
+            }
+            return acc;
+          },
+          []
+        );
 
         if (node.data?.meta) {
           // remove line highlight meta
@@ -91,19 +95,18 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
 };
 
 function getLanguage(node: TreeNode) {
-  const className = node.properties?.className || [];
+  const className = node.properties.className || [];
 
   for (const classListItem of className) {
     if (classListItem.slice(0, 9) === 'language-') {
       return classListItem.slice(9).toLowerCase();
     }
   }
-
   return null;
 }
 
 function getLinesToHighlight(node: TreeNode, maxLines: number): number[] {
-  const meta = node.data?.meta?.toString();
+  const meta = typeof node.data?.meta === 'string' ? node.data.meta : undefined;
   if (!meta) return [];
 
   const content = meta.match(lineHighlightPattern)?.[1]?.trim();
@@ -116,7 +119,7 @@ function getLinesToHighlight(node: TreeNode, maxLines: number): number[] {
       const trimmed = num.trim();
       if (!/^\d+$/.test(trimmed)) return undefined;
       const parsed = parseInt(trimmed, 10);
-      return parsed > maxLines ? undefined : parsed;
+      return parsed > maxLines ? maxLines : parsed;
     });
 
     if (!start) return;
@@ -131,4 +134,3 @@ function getLinesToHighlight(node: TreeNode, maxLines: number): number[] {
 
   return Array.from(lineNumbers).sort((a, b) => a - b);
 }
-

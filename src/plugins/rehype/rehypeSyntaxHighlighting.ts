@@ -94,19 +94,28 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
   };
 };
 
-function getLanguage(node: TreeNode) {
+function getLanguage(node: TreeNode): string | null {
   const className = node.properties.className || [];
 
   for (const classListItem of className) {
     if (classListItem.slice(0, 9) === 'language-') {
-      return classListItem.slice(9).toLowerCase();
+      const lang = classListItem.slice(9).toLowerCase();
+
+      if (refractor.registered(lang)) {
+        return lang;
+      }
+      return null;
     }
   }
+
   return null;
 }
 
 function getLinesToHighlight(node: TreeNode, maxLines: number): number[] {
-  const meta = typeof node.data?.meta === 'string' ? node.data.meta : undefined;
+  const meta =
+    typeof node.data?.meta === 'string'
+      ? node.data.meta
+      : node.properties.className?.reduce((acc, item) => acc + ' ' + item, '');
   if (!meta) return [];
 
   const content = meta.match(lineHighlightPattern)?.[1]?.trim();

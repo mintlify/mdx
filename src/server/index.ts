@@ -1,12 +1,13 @@
-import { compileMDX } from "next-mdx-remote/rsc";
-import type { CompileMDXResult, MDXRemoteProps } from "next-mdx-remote/rsc";
-import { serialize } from "next-mdx-remote/serialize";
-import rehypeKatex from "rehype-katex";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import remarkSmartypants from "remark-smartypants";
-import { rehypeSyntaxHighlighting } from "../plugins/index.js";
-import type { SerializeOptions } from "../types/index.js";
+import type { CompileMDXResult, MDXRemoteProps } from 'next-mdx-remote/rsc';
+import { compileMDX } from 'next-mdx-remote/rsc';
+import { serialize } from 'next-mdx-remote/serialize';
+import rehypeKatex from 'rehype-katex';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import remarkSmartypants from 'remark-smartypants';
+
+import { rehypeSyntaxHighlighting } from '../plugins/index.js';
+import type { SerializeOptions } from '../types/index.js';
 
 export const getCompiledMdx = async ({
   source,
@@ -15,9 +16,9 @@ export const getCompiledMdx = async ({
   parseFrontmatter = true,
 }: {
   source: string;
-  mdxOptions?: SerializeOptions["mdxOptions"];
-  scope?: SerializeOptions["scope"];
-  parseFrontmatter?: SerializeOptions["parseFrontmatter"];
+  mdxOptions?: SerializeOptions['mdxOptions'];
+  scope?: SerializeOptions['scope'];
+  parseFrontmatter?: SerializeOptions['parseFrontmatter'];
 }) => {
   try {
     const serializedResponse = await serialize(source, {
@@ -39,7 +40,7 @@ export const getCompiledMdx = async ({
           ],
           ...(mdxOptions?.rehypePlugins || []),
         ],
-        format: mdxOptions?.format || "mdx",
+        format: mdxOptions?.format || 'mdx',
         useDynamicImport: mdxOptions?.useDynamicImport || true,
       },
       scope,
@@ -54,18 +55,16 @@ export const getCompiledMdx = async ({
   }
 };
 
-export const getCompiledServerMdx = async <
-  TFrontmatter = Record<string, unknown>,
->({
+export const getCompiledServerMdx = async <TFrontmatter = Record<string, unknown>>({
   source,
   mdxOptions,
   components,
   parseFrontmatter = true,
 }: {
-  source: MDXRemoteProps["source"];
-  mdxOptions?: SerializeOptions["mdxOptions"];
-  components?: MDXRemoteProps["components"];
-  parseFrontmatter?: SerializeOptions["parseFrontmatter"];
+  source: MDXRemoteProps['source'];
+  mdxOptions?: SerializeOptions['mdxOptions'];
+  components?: MDXRemoteProps['components'];
+  parseFrontmatter?: SerializeOptions['parseFrontmatter'];
 }): Promise<CompileMDXResult<TFrontmatter>> => {
   return await compileMDX({
     source,
@@ -87,7 +86,7 @@ export const getCompiledServerMdx = async <
           ],
           ...(mdxOptions?.rehypePlugins || []),
         ],
-        format: mdxOptions?.format || "mdx",
+        format: mdxOptions?.format || 'mdx',
         useDynamicImport: mdxOptions?.useDynamicImport || true,
       },
       parseFrontmatter,

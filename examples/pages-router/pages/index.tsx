@@ -1,15 +1,13 @@
-import { MDXComponent, getCompiledMdx } from "@mintlify/mdx";
-import type { MDXCompiledResult } from "@mintlify/mdx";
-import type { GetStaticProps, InferGetStaticPropsType } from "next";
+import type { MDXCompiledResult } from '@mintlify/mdx';
+import { MDXComponent, getCompiledMdx } from '@mintlify/mdx';
+import { promises as fs } from 'fs';
+import type { GetStaticProps, InferGetStaticPropsType } from 'next';
 
 export const getStaticProps = (async () => {
-  const fileContentResponse = await fetch(
-    "https://raw.githubusercontent.com/mintlify/starter/main/essentials/code.mdx"
-  );
-  const fileContentData = await fileContentResponse.text();
+  const data = await fs.readFile(process.cwd() + '/examples/highlight-example.mdx');
 
   const mdxSource = await getCompiledMdx({
-    source: fileContentData,
+    source: data.toString(),
   });
 
   return {
@@ -21,9 +19,7 @@ export const getStaticProps = (async () => {
   mdxSource: MDXCompiledResult;
 }>;
 
-export default function Home({
-  mdxSource,
-}: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function Home({ mdxSource }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
     <article className="prose mx-auto py-8">
       <h1>{String(mdxSource.frontmatter.title)}</h1>

@@ -1,0 +1,51 @@
+---
+title: 'Line Highlighting'
+description: 'Highlights specific lines and/or line ranges'
+---
+
+This MDX file demonstrates syntax highlighting for various programming languages.
+
+## JavaScript
+
+```js index.js {2}
+console.log('Hello, world!');
+function add(a, b) {
+  return a + b;
+}
+
+function subtract(a, b) {
+  return a - b;
+}
+```
+
+## Python
+
+```python index.py {1-2,4-5}
+def add(a, b):
+    return a + b
+
+def subtract(a, b):
+    return a - b
+```
+
+## Java
+
+```java {3}
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Hello, World!");
+    }
+}
+```
+
+## C#
+
+```csharp index.cs {1,3-4}
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        Console.WriteLine("Hello, World!");
+    }
+}
+```

@@ -1,15 +1,13 @@
-import { getCompiledServerMdx } from "@mintlify/mdx";
+import { getCompiledServerMdx } from '@mintlify/mdx';
+import { promises as fs } from 'fs';
 
 export default async function Home() {
-  const fileContentResponse = await fetch(
-    "https://raw.githubusercontent.com/mintlify/starter/main/essentials/code.mdx"
-  );
-  const fileContentData = await fileContentResponse.text();
+  const data = await fs.readFile(process.cwd() + '/examples/highlight-example.mdx');
 
   const { content, frontmatter } = await getCompiledServerMdx<{
     title: string;
   }>({
-    source: fileContentData,
+    source: data.toString(),
   });
 
   return (

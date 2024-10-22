@@ -270,8 +270,6 @@ pre[class*='language-'] > code[class*='language-'] {
 .line-highlight {
   background: rgb(var(--primary-light) / 0.2);
   width: 100%;
-  padding-top: 0.2rem;
-  padding-bottom: 0.2rem;
   display: inline-block;
   position: relative;
   z-index: 0;

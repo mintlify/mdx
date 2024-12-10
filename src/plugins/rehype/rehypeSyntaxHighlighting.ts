@@ -6,6 +6,10 @@ import type { Node } from 'unist';
 import { Parent } from 'unist';
 import { visit } from 'unist-util-visit';
 
+import blade from '../../lib/syntaxHighlighting/blade.js';
+
+refractor.register(blade);
+
 export type RehypeSyntaxHighlightingOptions = {
   ignoreMissing?: boolean;
   alias?: Record<string, string[]>;

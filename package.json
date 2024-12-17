@@ -1,6 +1,6 @@
 {
   "name": "mdx",
-  "private": "true",
+  "private": true,
   "scripts": {
     "build": "yarn workspaces foreach --topological-dev -Av run build"
   },

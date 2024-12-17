@@ -15,7 +15,7 @@ You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/m
    ```tsx
    export const getStaticProps = (async () => {
      const mdxSource = await getCompiledMdx({
-       source: "## Markdown H2",
+       source: '## Markdown H2',
      });
 
      return {
@@ -31,9 +31,7 @@ You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/m
 2. Pass the `mdxSource` object as props inside the `MDXComponent`.
 
    ```tsx
-   export default function Page({
-     mdxSource,
-   }: InferGetStaticPropsType<typeof getStaticProps>) {
+   export default function Page({ mdxSource }: InferGetStaticPropsType<typeof getStaticProps>) {
      return <MDXComponent {...mdxSource} />;
    }
    ```
@@ -41,9 +39,8 @@ You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/m
 3. Import `@mintlify/mdx/dist/styles.css` inside your `_app.tsx` file. This file contains the styles for the code syntax highlighting.
 
    ```tsx
-   import "@mintlify/mdx/dist/styles.css";
-
-   import { AppProps } from "next/app";
+   import '@mintlify/mdx/dist/styles.css';
+   import { AppProps } from 'next/app';
 
    export default function App({ Component, pageProps }: AppProps) {
      return <Component {...pageProps} />;

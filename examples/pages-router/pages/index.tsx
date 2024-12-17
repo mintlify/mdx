@@ -1,22 +1,18 @@
-import type { MDXCompiledResult } from '@mintlify/mdx';
-import { MDXComponent, getCompiledMdx } from '@mintlify/mdx';
+import { MDXClient, serialize, SerializeResult } from '@mintlify/mdx';
 import { promises as fs } from 'fs';
 import type { GetStaticProps, InferGetStaticPropsType } from 'next';
 
 export const getStaticProps = (async () => {
-  const data = await fs.readFile(process.cwd() + '/examples/highlight-example.mdx');
+  const data = await fs.readFile(process.cwd() + '/examples/highlight-example.mdx', 'utf8');
 
-  const mdxSource = await getCompiledMdx({
-    source: data.toString(),
-  });
+  const mdxSource = await serialize({ source: data });
+  if ('error' in mdxSource) {
+    throw mdxSource.error;
+  }
 
-  return {
-    props: {
-      mdxSource,
-    },
-  };
+  return { props: { mdxSource } };
 }) satisfies GetStaticProps<{
-  mdxSource: MDXCompiledResult;
+  mdxSource: Omit<SerializeResult, 'error'>;
 }>;
 
 export default function Home({ mdxSource }: InferGetStaticPropsType<typeof getStaticProps>) {
@@ -24,7 +20,7 @@ export default function Home({ mdxSource }: InferGetStaticPropsType<typeof getSt
     <article className="prose mx-auto py-8">
       <h1>{String(mdxSource.frontmatter.title)}</h1>
 
-      <MDXComponent {...mdxSource} />
+      <MDXClient {...mdxSource} />
     </article>
   );
 }

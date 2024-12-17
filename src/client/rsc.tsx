@@ -1,7 +1,50 @@
-import type { MDXRemoteProps } from 'next-mdx-remote/rsc';
-import { MDXRemote } from 'next-mdx-remote/rsc';
+import { MDXRemote as BaseMDXRemote } from 'next-mdx-remote-client/rsc';
+import { SerializeOptions } from 'next-mdx-remote-client/serialize';
+import rehypeKatex from 'rehype-katex';
+import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import remarkSmartypants from 'remark-smartypants';
 
-export const MDXServerComponent = ({ source, components }: MDXRemoteProps) => {
-  // @ts-ignore: 'MDXRemote' cannot be used as a JSX component.
-  return <MDXRemote source={source} components={components} />;
-};
+import { rehypeSyntaxHighlighting } from '../plugins';
+
+export async function MDXRemote({
+  source,
+  mdxOptions,
+  scope,
+  parseFrontmatter,
+}: {
+  source: string;
+  mdxOptions?: SerializeOptions['mdxOptions'];
+  scope?: SerializeOptions['scope'];
+  parseFrontmatter?: SerializeOptions['parseFrontmatter'];
+}) {
+  return (
+    // @ts-expect-error Server Component
+    <BaseMDXRemote
+      source={source}
+      options={{
+        scope,
+        mdxOptions: {
+          remarkPlugins: [
+            remarkGfm,
+            remarkSmartypants,
+            remarkMath,
+            ...(mdxOptions?.remarkPlugins || []),
+          ],
+          rehypePlugins: [
+            rehypeKatex,
+            [
+              rehypeSyntaxHighlighting,
+              {
+                ignoreMissing: true,
+              },
+            ],
+            ...(mdxOptions?.rehypePlugins || []),
+          ],
+          format: mdxOptions?.format || 'mdx',
+        },
+        parseFrontmatter,
+      }}
+    />
+  );
+}

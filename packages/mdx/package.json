@@ -1,0 +1,73 @@
+{
+  "name": "@mintlify/mdx",
+  "version": "1.0.0",
+  "description": "Markdown parser from Mintlify",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "sideEffects": false,
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mintlify/mdx.git"
+  },
+  "scripts": {
+    "prepare": "npm run build",
+    "build": "tsc --project tsconfig.build.json && yarn copy:css",
+    "clean:build": "rimraf dist",
+    "clean:all": "rimraf node_modules .eslintcache && yarn clean:build",
+    "watch": "tsc --watch",
+    "type": "tsc --noEmit",
+    "lint": "eslint . --cache",
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "copy:css": "cp -r ./src/styles/prism.css ./dist/styles.css"
+  },
+  "author": "Mintlify, Inc.",
+  "license": "MIT",
+  "devDependencies": {
+    "@mintlify/eslint-config": "^1.0.4",
+    "@mintlify/eslint-config-typescript": "^1.0.9",
+    "@mintlify/prettier-config": "^1.0.1",
+    "@mintlify/ts-config": "^2.0.2",
+    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
+    "@tsconfig/recommended": "1.x",
+    "@types/react": "^18.3.11",
+    "@types/react-dom": "^18.3.0",
+    "@typescript-eslint/eslint-plugin": "6.x",
+    "@typescript-eslint/parser": "6.x",
+    "eslint": "8.x",
+    "eslint-config-prettier": "8.x",
+    "eslint-plugin-unused-imports": "^3.x",
+    "prettier": "^3.1.1",
+    "prettier-plugin-tailwindcss": "^0.6.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "rimraf": "^5.0.1",
+    "typescript": "^5.7.2"
+  },
+  "peerDependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "dependencies": {
+    "@types/hast": "^3.0.4",
+    "@types/unist": "^3.0.3",
+    "hast-util-to-string": "^3.0.1",
+    "next-mdx-remote-client": "^1.0.3",
+    "refractor": "^4.8.1",
+    "rehype-katex": "^7.0.1",
+    "remark-gfm": "^4.0.0",
+    "remark-math": "^6.0.0",
+    "remark-smartypants": "^3.0.2",
+    "unified": "^11.0.0",
+    "unist-util-visit": "^5.0.0"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

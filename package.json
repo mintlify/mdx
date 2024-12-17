@@ -1,5 +1,8 @@
 {
   "name": "mdx",
+  "scripts": {
+    "build": "yarn workspaces foreach --topological-dev -Av run build"
+  },
   "workspaces": [
     "packages/*",
     "examples/*"

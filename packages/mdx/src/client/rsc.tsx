@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkSmartypants from 'remark-smartypants';
 
-import { rehypeSyntaxHighlighting } from '../plugins';
+import { rehypeSyntaxHighlighting } from '../plugins/index.js';
 
 export async function MDXRemote({
   source,

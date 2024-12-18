@@ -1,4 +1,4 @@
-import { MDXRemote as BaseMDXRemote } from 'next-mdx-remote-client/rsc';
+import { MDXRemote as BaseMDXRemote, MDXComponents } from 'next-mdx-remote-client/rsc';
 import { SerializeOptions } from 'next-mdx-remote-client/serialize';
 import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
@@ -11,17 +11,20 @@ export async function MDXRemote({
   source,
   mdxOptions,
   scope,
+  components,
   parseFrontmatter,
 }: {
   source: string;
   mdxOptions?: SerializeOptions['mdxOptions'];
   scope?: SerializeOptions['scope'];
+  components?: MDXComponents;
   parseFrontmatter?: SerializeOptions['parseFrontmatter'];
 }) {
   return (
     // @ts-expect-error Server Component
     <BaseMDXRemote
       source={source}
+      components={components}
       options={{
         scope,
         mdxOptions: {
@@ -33,12 +36,7 @@ export async function MDXRemote({
           ],
           rehypePlugins: [
             rehypeKatex,
-            [
-              rehypeSyntaxHighlighting,
-              {
-                ignoreMissing: true,
-              },
-            ],
+            [rehypeSyntaxHighlighting, { ignoreMissing: true }],
             ...(mdxOptions?.rehypePlugins || []),
           ],
           format: mdxOptions?.format || 'mdx',

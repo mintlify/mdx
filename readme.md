@@ -28,7 +28,7 @@
 
 # Mintlify's markdown parser
 
-**@mintlify/mdx** is a thin layer on top of [next-mdx-remote](https://github.com/hashicorp/next-mdx-remote) that provides a better developer experience for Next.js users by adding support for syntax highlighting.
+**@mintlify/mdx** is a thin layer on top of [next-mdx-remote-client](https://github.com/ipikuka/next-mdx-remote-client) that provides a better developer experience for Next.js users by adding support for syntax highlighting.
 
 ## Installation
 
@@ -49,21 +49,21 @@ pnpm add @mintlify/mdx
 
 [You can check the example app here](https://github.com/mintlify/mdx/tree/main/examples/pages-router).
 
-1. Call the `getCompiledMdx` function inside `getStaticProps` and return the `mdxSource` object.
+1. Call the `serialize` function inside `getStaticProps` and return the `mdxSource` object.
 
    ```tsx
    export const getStaticProps = (async () => {
-     const mdxSource = await getCompiledMdx({
+     const mdxSource = await serialize({
        source: '## Markdown H2',
      });
 
-     return {
-       props: {
-         mdxSource,
-       },
-     };
+     if ('error' in mdxSource) {
+      // handle error case
+     }
+
+     return { props: { mdxSource } };
    }) satisfies GetStaticProps<{
-     mdxSource: MDXCompiledResult;
+     mdxSource: SerializeSuccess;
    }>;
    ```
 
@@ -71,7 +71,7 @@ pnpm add @mintlify/mdx
 
    ```tsx
    export default function Page({ mdxSource }: InferGetStaticPropsType<typeof getStaticProps>) {
-     return <MDXComponent {...mdxSource} />;
+     return <MDXClient {...mdxSource} />;
    }
    ```
 
@@ -90,26 +90,22 @@ pnpm add @mintlify/mdx
 
 [You can check the example app here](https://github.com/mintlify/mdx/tree/main/examples/app-router).
 
-1. Call the `getCompiledServerMdx` function inside your async React Server Component which will give you the `frontmatter` and `content`.
+1. Use the `MDXRemote` component directly inside your async React Server Component.
 
    ```tsx
-   import { getCompiledServerMdx } from '@mintlify/mdx';
+   import { MDXRemote } from '@mintlify/mdx';
 
    export default async function Home() {
-     const { content, frontmatter } = await getCompiledServerMdx({
-       source: `---
-         title: Title
-         ---
-   
-         ## Markdown H2
-       `,
-     });
+     const source: `---
+      title: Title
+      ---
+
+      ## Markdown H2
+      `;
 
      return (
        <article className="prose mx-auto py-8">
-         <h1>{String(frontmatter.title)}</h1>
-
-         {content}
+         <MDXRemote source={source} parseFrontmatter />
        </article>
      );
    }
@@ -137,19 +133,18 @@ pnpm add @mintlify/mdx
 
 ## APIs
 
-Similar to [next-mdx-remote](https://github.com/hashicorp/next-mdx-remote), this package exports the following APIs:
+Similar to [next-mdx-remote-client](https://github.com/ipikuka/next-mdx-remote-client), this package exports the following APIs:
 
-- `getCompiledMdx` - a function that compiles MDX source to MDXCompiledResult.
-- `MDXComponent` - a component that renders MDXCompiledResult.
-- `getCompiledServerMdx` - a function that compiles MDX source to return `content` and `frontmatter ` and should be used inside async React Server Component.
-- `MDXServerComponent` - a component that renders `content` and `frontmatter ` and should be used inside async React Server Component.
+- `serialize` - a function that compiles MDX source to SerializeResult.
+- `MDXClient` - a component that renders SerializeSuccess on the client.
+- `MDXRemote` - a component that both serializes and renders the source - should be used inside async React Server Component.
 
-### getCompiledMdx
+### serialize
 
 ```tsx
-import { getCompiledMdx } from '@mintlify/mdx';
+import { serialize } from '@mintlify/mdx';
 
-const mdxSource = await getCompiledMdx({
+const mdxSource = await serialize({
   source: '## Markdown H2',
   mdxOptions: {
     remarkPlugins: [
@@ -162,59 +157,39 @@ const mdxSource = await getCompiledMdx({
 });
 ```
 
-### MDXComponent
+### MDXClient
 
 ```tsx
-import { MDXComponent } from '@mintlify/mdx';
+'use client';
 
-<MDXComponent
-  components={
-    {
-      // Your custom components
-    }
-  }
+import { MDXClient } from '@mintlify/mdx';
+
+<MDXClient
+  components={{
+    // Your custom components
+  }}
   {...mdxSource}
 />;
 ```
 
-### getCompiledServerMdx
+### MDXRemote
 
 ```tsx
-import { getCompiledServerMdx } from '@mintlify/mdx';
+import { MDXRemote } from '@mintlify/mdx';
 
-const { content, frontmatter } = await getCompiledServerMdx({
-  source: `---
-    title: Title
-    ---
-
-    ## Markdown H2
-  `,
-  mdxOptions: {
+<MDXRemote
+  source="## Markdown H2"
+  mdxOptions={{
     remarkPlugins: [
       // Remark plugins
     ],
     rehypePlugins: [
       // Rehype plugins
     ],
-  },
-  components: {
+  }}
+  components={{
     // Your custom components
-  },
-});
-```
-
-### MDXServerComponent
-
-```tsx
-import { MDXServerComponent } from '@mintlify/mdx';
-
-<MDXServerComponent
-  source="## Markdown H2"
-  components={
-    {
-      // Your custom components
-    }
-  }
+  }}
 />;
 ```
 

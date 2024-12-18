@@ -10,26 +10,22 @@ You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/m
 
 ## How to use
 
-1. Call the `getCompiledServerMdx` function inside your async React Server Component which will give you the `frontmatter` and `content`.
+1. Use the `MDXRemote` component directly inside your async React Server Component.
 
    ```tsx
-   import { getCompiledServerMdx } from '@mintlify/mdx';
+   import { MDXRemote } from '@mintlify/mdx';
 
    export default async function Home() {
-     const { content, frontmatter } = await getCompiledServerMdx({
-       source: `---
-         title: Title
-         ---
-   
-         ## Markdown H2
-       `,
-     });
+     const source: `---
+      title: Title
+      ---
+
+      ## Markdown H2
+      `;
 
      return (
        <article className="prose mx-auto py-8">
-         <h1>{String(frontmatter.title)}</h1>
-
-         {content}
+         <MDXRemote source={source} parseFrontmatter />
        </article>
      );
    }

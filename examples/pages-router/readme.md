@@ -10,21 +10,21 @@ You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/m
 
 ## How to use
 
-1. Call the `getCompiledMdx` function inside `getStaticProps` and return the `mdxSource` object.
+1. Call the `serialize` function inside `getStaticProps` and return the `mdxSource` object.
 
    ```tsx
    export const getStaticProps = (async () => {
-     const mdxSource = await getCompiledMdx({
+     const mdxSource = await serialize({
        source: '## Markdown H2',
      });
 
-     return {
-       props: {
-         mdxSource,
-       },
-     };
+     if ('error' in mdxSource) {
+      // handle error case
+     }
+
+     return { props: { mdxSource } };
    }) satisfies GetStaticProps<{
-     mdxSource: MDXCompiledResult;
+     mdxSource: SerializeSuccess;
    }>;
    ```
 
@@ -32,7 +32,7 @@ You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/m
 
    ```tsx
    export default function Page({ mdxSource }: InferGetStaticPropsType<typeof getStaticProps>) {
-     return <MDXComponent {...mdxSource} />;
+     return <MDXClient {...mdxSource} />;
    }
    ```
 

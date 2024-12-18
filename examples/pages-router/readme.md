@@ -10,40 +10,37 @@ You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/m
 
 ## How to use
 
-1. Call the `getCompiledMdx` function inside `getStaticProps` and return the `mdxSource` object.
+1. Call the `serialize` function inside `getStaticProps` and return the `mdxSource` object.
 
    ```tsx
    export const getStaticProps = (async () => {
-     const mdxSource = await getCompiledMdx({
-       source: "## Markdown H2",
+     const mdxSource = await serialize({
+       source: '## Markdown H2',
      });
 
-     return {
-       props: {
-         mdxSource,
-       },
-     };
+     if ('error' in mdxSource) {
+      // handle error case
+     }
+
+     return { props: { mdxSource } };
    }) satisfies GetStaticProps<{
-     mdxSource: MDXCompiledResult;
+     mdxSource: SerializeSuccess;
    }>;
    ```
 
 2. Pass the `mdxSource` object as props inside the `MDXComponent`.
 
    ```tsx
-   export default function Page({
-     mdxSource,
-   }: InferGetStaticPropsType<typeof getStaticProps>) {
-     return <MDXComponent {...mdxSource} />;
+   export default function Page({ mdxSource }: InferGetStaticPropsType<typeof getStaticProps>) {
+     return <MDXClient {...mdxSource} />;
    }
    ```
 
 3. Import `@mintlify/mdx/dist/styles.css` inside your `_app.tsx` file. This file contains the styles for the code syntax highlighting.
 
    ```tsx
-   import "@mintlify/mdx/dist/styles.css";
-
-   import { AppProps } from "next/app";
+   import '@mintlify/mdx/dist/styles.css';
+   import { AppProps } from 'next/app';
 
    export default function App({ Component, pageProps }: AppProps) {
      return <Component {...pageProps} />;

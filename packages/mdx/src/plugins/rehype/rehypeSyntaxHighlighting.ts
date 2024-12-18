@@ -1,9 +1,7 @@
+import { Element, ElementContent, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
-import { RefractorElement, RefractorRoot } from 'refractor';
 import { refractor } from 'refractor/lib/all.js';
-import type { Plugin } from 'unified';
-import type { Node } from 'unist';
-import { Parent } from 'unist';
+import { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
 import blade from '../../lib/syntaxHighlighting/blade.js';
@@ -15,23 +13,15 @@ export type RehypeSyntaxHighlightingOptions = {
   alias?: Record<string, string[]>;
 };
 
-export type TreeNode = RefractorElement &
-  Node & {
-    properties: {
-      className?: string[];
-    };
-  };
-
-export type TreeParent = Parent & {
-  tagName: string;
-  properties: {
-    className?: string[];
-  };
-};
-
 const lineHighlightPattern = /\{(.*?)\}/;
 
-export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?], TreeNode> = (
+function classNameOrEmptyArray(element: Element): string[] {
+  const className = element.properties.className;
+  if (Array.isArray(className) && className.every((el) => typeof el === 'string')) return className;
+  return [];
+}
+
+export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?], Root, Root> = (
   options = {}
 ) => {
   if (options.alias) {
@@ -39,48 +29,48 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
   }
 
   return (tree) => {
-    visit(tree, 'element', (node: TreeNode, _index, parent?: TreeParent) => {
-      if (!parent || parent.tagName !== 'pre' || node.tagName !== 'code') {
+    visit(tree, 'element', (node, _index, parent) => {
+      if (
+        !parent ||
+        parent.type !== 'element' ||
+        parent.tagName !== 'pre' ||
+        node.tagName !== 'code'
+      ) {
         return;
       }
 
       const lang = getLanguage(node) || 'plaintext';
 
       try {
-        parent.properties.className = (parent.properties.className || []).concat(
-          'language-' + lang
-        );
+        parent.properties.className = classNameOrEmptyArray(parent).concat('language-' + lang);
         const code = toString(node);
         const lines = code.split('\n');
         const linesToHighlight = getLinesToHighlight(node, lines.length);
 
-        const nodes = lines.reduce(
-          (acc: RefractorRoot['children'], line: string, index: number) => {
-            const isNotEmptyLine = line.trim() !== '';
-            // Line numbers start from 1
-            const isHighlighted = linesToHighlight.includes(index + 1);
+        const nodes = lines.reduce<ElementContent[]>((acc, line, index) => {
+          const isNotEmptyLine = line.trim() !== '';
+          // Line numbers start from 1
+          const isHighlighted = linesToHighlight.includes(index + 1);
 
-            if (isNotEmptyLine) {
-              const node: TreeNode = {
-                type: 'element',
-                tagName: 'span',
-                properties: {
-                  className: [isHighlighted ? 'line-highlight' : ''],
-                },
-                children: refractor.highlight(line, lang).children,
-              };
-              acc.push(node);
-            } else {
-              acc.push({ type: 'text', value: line });
-            }
+          if (isNotEmptyLine) {
+            const node: Element = {
+              type: 'element',
+              tagName: 'span',
+              properties: {
+                className: [isHighlighted ? 'line-highlight' : ''],
+              },
+              children: refractor.highlight(line, lang).children as ElementContent[],
+            };
+            acc.push(node);
+          } else {
+            acc.push({ type: 'text', value: line });
+          }
 
-            if (index < lines.length - 1) {
-              acc.push({ type: 'text', value: '\n' });
-            }
-            return acc;
-          },
-          []
-        );
+          if (index < lines.length - 1) {
+            acc.push({ type: 'text', value: '\n' });
+          }
+          return acc;
+        }, []);
 
         if (node.data?.meta) {
           // remove line highlight meta
@@ -98,8 +88,8 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
   };
 };
 
-function getLanguage(node: TreeNode): string | null {
-  const className = node.properties.className || [];
+function getLanguage(node: Element): string | null {
+  const className = classNameOrEmptyArray(node);
 
   for (const classListItem of className) {
     if (classListItem.slice(0, 9) === 'language-') {
@@ -115,11 +105,11 @@ function getLanguage(node: TreeNode): string | null {
   return null;
 }
 
-function getLinesToHighlight(node: TreeNode, maxLines: number): number[] {
+function getLinesToHighlight(node: Element, maxLines: number): number[] {
   const meta =
     typeof node.data?.meta === 'string'
       ? node.data.meta
-      : node.properties.className?.reduce((acc, item) => acc + ' ' + item, '');
+      : classNameOrEmptyArray(node).reduce((acc, item) => acc + ' ' + item, '');
   if (!meta) return [];
 
   const content = meta.match(lineHighlightPattern)?.[1]?.trim();

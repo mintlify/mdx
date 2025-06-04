@@ -38,8 +38,8 @@
     "@mintlify/ts-config": "^2.0.2",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/recommended": "1.x",
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
     "@typescript-eslint/eslint-plugin": "6.x",
     "@typescript-eslint/parser": "6.x",
     "eslint": "8.x",
@@ -47,14 +47,14 @@
     "eslint-plugin-unused-imports": "^3.x",
     "prettier": "^3.1.1",
     "prettier-plugin-tailwindcss": "^0.6.8",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
     "rimraf": "^5.0.1",
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "dependencies": {
     "@types/hast": "^3.0.4",

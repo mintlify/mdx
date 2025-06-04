@@ -72,11 +72,6 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
           return acc;
         }, []);
 
-        if (node.data?.meta) {
-          // remove line highlight meta
-          node.data.meta = (node.data.meta as string).replace(lineHighlightPattern, '').trim();
-        }
-
         node.children = nodes;
       } catch (err) {
         if (options.ignoreMissing && /Unknown language/.test((err as Error).message)) {

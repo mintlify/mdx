@@ -57,6 +57,9 @@
     "react-dom": "^18.3.1"
   },
   "dependencies": {
+    "@shikijs/langs": "^3.6.0",
+    "@shikijs/rehype": "^3.6.0",
+    "@shikijs/themes": "^3.6.0",
     "@types/hast": "^3.0.4",
     "@types/unist": "^3.0.3",
     "hast-util-to-string": "^3.0.1",
@@ -66,6 +69,7 @@
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "remark-smartypants": "^3.0.2",
+    "shiki": "^3.6.0",
     "unified": "^11.0.0",
     "unist-util-visit": "^5.0.0"
   }

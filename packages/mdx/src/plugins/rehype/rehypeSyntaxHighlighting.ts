@@ -1,16 +1,41 @@
-import { Element, ElementContent, Root } from 'hast';
+import { Element, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
-import { refractor } from 'refractor/lib/all.js';
+import {
+  createHighlighter,
+  type Highlighter,
+  type BuiltinTheme,
+  BundledTheme,
+  BundledLanguage,
+} from 'shiki';
 import { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
-import blade from '../../lib/syntaxHighlighting/blade.js';
+import {
+  BASE_LANGUAGES,
+  DEFAULT_LANG_ALIASES,
+  ShikiLang,
+  UNIQUE_LANGS,
+} from './shiki-constants.js';
 
-refractor.register(blade);
+const shikiColorReplacements: Partial<Record<BundledTheme, string | Record<string, string>>> = {
+  'dark-plus': {
+    '#1e1e1e': 'transparent',
+    '#569cd6': '#9cdcfe',
+    '#c8c8c8': '#f3f7f6',
+    '#d4d4d4': '#f3f7f6',
+  },
+  'github-light-default': {
+    '#fff': 'transparent',
+    '#ffffff': 'transparent',
+  },
+};
 
 export type RehypeSyntaxHighlightingOptions = {
   ignoreMissing?: boolean;
-  alias?: Record<string, string[]>;
+  alias?: Record<string, ShikiLang>;
+  theme?: BuiltinTheme;
+  themes?: Record<'light' | 'dark', BuiltinTheme>;
+  codeStyling?: 'dark' | 'system';
 };
 
 const lineHighlightPattern = /\{(.*?)\}/;
@@ -21,63 +46,99 @@ function classNameOrEmptyArray(element: Element): string[] {
   return [];
 }
 
+let highlighterPromise: Promise<Highlighter> | null = null;
+
+async function getHighlighter(): Promise<Highlighter> {
+  if (!highlighterPromise) {
+    highlighterPromise = createHighlighter({
+      themes: ['github-light-default', 'dark-plus'],
+      langs: UNIQUE_LANGS,
+    });
+  }
+  return highlighterPromise;
+}
+
 export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?], Root, Root> = (
   options = {}
 ) => {
-  if (options.alias) {
-    refractor.alias(options.alias);
-  }
+  const languageAliases = { ...options.alias, ...DEFAULT_LANG_ALIASES };
 
-  return (tree) => {
-    visit(tree, 'element', (node, _index, parent) => {
+  return async (tree) => {
+    const highlighter = await getHighlighter();
+
+    visit(tree, 'element', (node, index, parent) => {
+      const child = node.children[0];
       if (
         !parent ||
-        parent.type !== 'element' ||
-        parent.tagName !== 'pre' ||
-        node.tagName !== 'code'
+        index === undefined ||
+        node.type !== 'element' ||
+        node.tagName !== 'pre' ||
+        !child ||
+        child.type !== 'element' ||
+        child.tagName !== 'code'
       ) {
         return;
       }
 
-      const lang = getLanguage(node) || 'plaintext';
+      // set the metadata of `node` (which is a pre element) to that of
+      // `child` (which is the code element that likely contains all the metadata)
+      if (!Object.keys(node.properties).length) {
+        node.properties = child.properties;
+      }
+      if (!node.data) {
+        node.data = child.data;
+      }
+
+      let lang =
+        getLanguage(node, languageAliases) ?? getLanguage(child, languageAliases) ?? 'text';
+
+      if (!BASE_LANGUAGES.includes(lang)) {
+        highlighter.loadLanguage(lang as BundledLanguage);
+      }
 
       try {
-        parent.properties.className = classNameOrEmptyArray(parent).concat('language-' + lang);
         const code = toString(node);
         const lines = code.split('\n');
-        const linesToHighlight = getLinesToHighlight(node, lines.length);
+        let linesToHighlight = getLinesToHighlight(node, lines.length);
 
-        const nodes = lines.reduce<ElementContent[]>((acc, line, index) => {
-          const isNotEmptyLine = line.trim() !== '';
-          // Line numbers start from 1
-          const isHighlighted = linesToHighlight.includes(index + 1);
+        const hast = highlighter.codeToHast(code, {
+          lang: lang ?? 'text',
+          themes: {
+            light: 'github-light-default',
+            dark: 'dark-plus',
+          },
+          colorReplacements: shikiColorReplacements,
+          tabindex: false,
+          tokenizeMaxLineLength: 1000,
+        });
 
-          if (isNotEmptyLine) {
-            const node: Element = {
-              type: 'element',
-              tagName: 'span',
-              properties: {
-                className: [isHighlighted ? 'line-highlight' : ''],
-              },
-              children: refractor.highlight(line, lang).children as ElementContent[],
-            };
-            acc.push(node);
-          } else {
-            acc.push({ type: 'text', value: line });
+        const codeElement = hast.children[0] as Element;
+        if (!codeElement) return;
+
+        let lineNumber = 0;
+        visit(codeElement, 'element', (span, _, spanParent) => {
+          if (
+            !spanParent ||
+            spanParent.type !== 'element' ||
+            spanParent.tagName !== 'code' ||
+            span.tagName !== 'span' ||
+            (typeof span.properties.class !== 'string' && !Array.isArray(span.properties.class)) ||
+            !span.properties.class.includes('line')
+          ) {
+            return;
           }
 
-          if (index < lines.length - 1) {
-            acc.push({ type: 'text', value: '\n' });
+          lineNumber++;
+          if (linesToHighlight.includes(lineNumber)) {
+            if (typeof span.properties.class === 'string') {
+              span.properties.class += ' line-highlight';
+            } else {
+              span.properties.class = [...span.properties.class, 'line-highlight'];
+            }
           }
-          return acc;
-        }, []);
+        });
 
-        if (node.data?.meta) {
-          // remove line highlight meta
-          node.data.meta = (node.data.meta as string).replace(lineHighlightPattern, '').trim();
-        }
-
-        node.children = nodes;
+        parent.children.splice(index, 1, codeElement);
       } catch (err) {
         if (options.ignoreMissing && /Unknown language/.test((err as Error).message)) {
           return;
@@ -88,21 +149,17 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
   };
 };
 
-function getLanguage(node: Element): string | null {
+function getLanguage(node: Element, aliases: Record<string, ShikiLang>): ShikiLang | undefined {
   const className = classNameOrEmptyArray(node);
 
   for (const classListItem of className) {
-    if (classListItem.slice(0, 9) === 'language-') {
+    if (classListItem.startsWith('language-')) {
       const lang = classListItem.slice(9).toLowerCase();
-
-      if (refractor.registered(lang)) {
-        return lang;
-      }
-      return null;
+      if (lang) return aliases[lang];
     }
   }
 
-  return null;
+  return undefined;
 }
 
 function getLinesToHighlight(node: Element, maxLines: number): number[] {

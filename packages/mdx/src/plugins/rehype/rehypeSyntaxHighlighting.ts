@@ -138,6 +138,11 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
           }
         });
 
+        if (node.data?.meta) {
+          node.data.meta = node.data.meta.replace(lineHighlightPattern, '').trim();
+        }
+        codeElement.data = node.data;
+        if (codeElement.children[0]) codeElement.children[0].data = node.data;
         parent.children.splice(index, 1, codeElement);
       } catch (err) {
         if (options.ignoreMissing && /Unknown language/.test((err as Error).message)) {

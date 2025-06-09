@@ -1,20 +1,20 @@
-import { Element, Root } from 'hast';
+import type { Element, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
 import {
   createHighlighter,
   type Highlighter,
   type BuiltinTheme,
-  BundledTheme,
-  BundledLanguage,
+  type BundledTheme,
+  type BundledLanguage,
 } from 'shiki';
-import { Plugin } from 'unified';
+import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
 import {
   BASE_LANGUAGES,
   DEFAULT_LANG_ALIASES,
-  ShikiLang,
   UNIQUE_LANGS,
+  type ShikiLang,
 } from './shiki-constants.js';
 
 const shikiColorReplacements: Partial<Record<BundledTheme, string | Record<string, string>>> = {

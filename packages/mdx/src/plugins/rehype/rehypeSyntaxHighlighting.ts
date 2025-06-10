@@ -1,16 +1,16 @@
 import type { Element, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
-import {
-  createHighlighter,
-  type Highlighter,
-  type BuiltinTheme,
-  type BundledTheme,
-  type BundledLanguage,
-} from 'shiki';
+import { createHighlighter, type Highlighter, type BuiltinTheme, type BundledTheme } from 'shiki';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
-import { DEFAULT_LANG_ALIASES, UNIQUE_LANGS, type ShikiLang } from './shiki-constants.js';
+import {
+  DEFAULT_LANG_ALIASES,
+  SHIKI_THEMES,
+  UNIQUE_LANGS,
+  type ShikiLang,
+  type ShikiTheme,
+} from './shiki-constants.js';
 
 const shikiColorReplacements: Partial<Record<BundledTheme, string | Record<string, string>>> = {
   'dark-plus': {
@@ -93,10 +93,6 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         getLanguage(node, DEFAULT_LANG_ALIASES) ??
         getLanguage(child, DEFAULT_LANG_ALIASES) ??
         'text';
-
-      if (!UNIQUE_LANGS.includes(lang)) {
-        highlighter.loadLanguage(lang as BundledLanguage);
-      }
 
       try {
         const code = toString(node);
@@ -214,4 +210,4 @@ function getLinesToHighlight(node: Element, maxLines: number): number[] {
   return Array.from(lineNumbers).sort((a, b) => a - b);
 }
 
-export { UNIQUE_LANGS, ShikiLang, DEFAULT_LANG_ALIASES };
+export { UNIQUE_LANGS, DEFAULT_LANG_ALIASES, SHIKI_THEMES, ShikiLang, ShikiTheme };

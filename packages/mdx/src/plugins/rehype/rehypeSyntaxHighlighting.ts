@@ -116,12 +116,13 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         if (!codeElement) return;
 
         let lineNumber = 0;
-        visit(codeElement, 'element', (span, _, spanParent) => {
+        visit(codeElement, 'element', (span, spanIndex, spanParent) => {
           if (
             !spanParent ||
             spanParent.type !== 'element' ||
             spanParent.tagName !== 'code' ||
             span.tagName !== 'span' ||
+            (!span.children.length && spanIndex === spanParent.children.length - 1) ||
             (typeof span.properties.class !== 'string' && !Array.isArray(span.properties.class)) ||
             !span.properties.class.includes('line')
           ) {
@@ -138,11 +139,19 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
           }
         });
 
-        if (node.data?.meta) {
+        const preChild = codeElement.children[0] as Element;
+        const numberOfLines = lineNumber;
+
+        node.data = node.data ?? {};
+        if (node.data.meta) {
           node.data.meta = node.data.meta.replace(lineHighlightPattern, '').trim();
         }
         codeElement.data = node.data;
-        if (codeElement.children[0]) codeElement.children[0].data = node.data;
+        codeElement.properties.numberOfLines = numberOfLines;
+        if (preChild) {
+          preChild.data = node.data;
+          preChild.properties.numberOfLines = numberOfLines;
+        }
         parent.children.splice(index, 1, codeElement);
       } catch (err) {
         if (options.ignoreMissing && /Unknown language/.test((err as Error).message)) {

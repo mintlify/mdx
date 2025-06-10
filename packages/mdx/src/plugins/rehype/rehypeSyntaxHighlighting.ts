@@ -45,20 +45,23 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
   options = {}
 ) => {
   return async (tree) => {
-    const highlighter = await getHighlighter();
-    if (options.theme && !DEFAULT_THEMES.includes(options.theme)) {
-      await highlighter.loadTheme(options.theme);
-    }
+    const themesToLoad: ShikiTheme[] = [];
     if (options.themes) {
-      const promises: Promise<void>[] = [];
-      if (!DEFAULT_THEMES.includes(options.themes.dark)) {
-        promises.push(highlighter.loadTheme(options.themes.dark));
-      }
-      if (!DEFAULT_THEMES.includes(options.themes.light)) {
-        promises.push(highlighter.loadTheme(options.themes.light));
-      }
-      await Promise.all(promises);
+      themesToLoad.push(options.themes.dark);
+      themesToLoad.push(options.themes.light);
+    } else if (options.theme) {
+      themesToLoad.push(options.theme);
     }
+
+    const highlighter = await getHighlighter();
+    await Promise.all(
+      themesToLoad
+        .filter(
+          (theme): theme is Exclude<ShikiTheme, 'css-variables'> =>
+            !DEFAULT_THEMES.includes(theme) && theme !== 'css-variables'
+        )
+        .map(async (theme) => await highlighter.loadTheme(theme))
+    );
 
     visit(tree, 'element', (node, index, parent) => {
       const child = node.children[0];

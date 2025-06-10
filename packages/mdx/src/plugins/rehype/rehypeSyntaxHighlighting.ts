@@ -1,5 +1,6 @@
 import type { Element, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
+import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from 'mdast-util-mdx-jsx';
 import { createHighlighter, type Highlighter } from 'shiki';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
@@ -15,6 +16,7 @@ import {
   DEFAULT_DARK_THEME,
   DEFAULT_LIGHT_THEME,
   DEFAULT_THEMES,
+  DEFAULT_LANGS,
 } from './shiki-constants.js';
 import {
   getLanguage,
@@ -35,7 +37,7 @@ async function getHighlighter(): Promise<Highlighter> {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
       themes: DEFAULT_THEMES,
-      langs: UNIQUE_LANGS,
+      langs: DEFAULT_LANGS,
     });
   }
   return highlighterPromise;
@@ -45,6 +47,7 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
   options = {}
 ) => {
   return async (tree) => {
+    const asyncNodesToProcess: Promise<void>[] = [];
     const themesToLoad: ShikiTheme[] = [];
     if (options.themes) {
       themesToLoad.push(options.themes.dark);
@@ -91,74 +94,94 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         getLanguage(child, DEFAULT_LANG_ALIASES) ??
         DEFAULT_LANG;
 
-      try {
-        const code = toString(node);
-        const lines = code.split('\n');
-        let linesToHighlight = getLinesToHighlight(node, lines.length);
-
-        const hast = highlighter.codeToHast(code, {
-          lang: lang ?? DEFAULT_LANG,
-          themes: {
-            light:
-              options.themes?.light ??
-              options.theme ??
-              (options.codeStyling === 'dark' ? DEFAULT_DARK_THEME : DEFAULT_LIGHT_THEME),
-            dark: options.themes?.dark ?? options.theme ?? DEFAULT_DARK_THEME,
-          },
-          colorReplacements: shikiColorReplacements,
-          tabindex: false,
-          tokenizeMaxLineLength: 1000,
-        });
-
-        const codeElement = hast.children[0] as Element;
-        if (!codeElement) return;
-
-        let lineNumber = 0;
-        visit(codeElement, 'element', (span, spanIndex, spanParent) => {
-          if (
-            !spanParent ||
-            spanParent.type !== 'element' ||
-            spanParent.tagName !== 'code' ||
-            span.tagName !== 'span' ||
-            (!span.children.length && spanIndex === spanParent.children.length - 1) ||
-            (typeof span.properties.class !== 'string' && !Array.isArray(span.properties.class)) ||
-            !span.properties.class.includes('line')
-          ) {
-            return;
-          }
-
-          lineNumber++;
-          if (linesToHighlight.includes(lineNumber)) {
-            if (typeof span.properties.class === 'string') {
-              span.properties.class += ' ' + LINE_HIGHLIGHT_CLASS;
-            } else {
-              span.properties.class = [...span.properties.class, LINE_HIGHLIGHT_CLASS];
-            }
-          }
-        });
-
-        const preChild = codeElement.children[0] as Element;
-        const numberOfLines = lineNumber;
-
-        node.data = node.data ?? {};
-        if (node.data.meta) {
-          node.data.meta = node.data.meta.replace(lineHighlightPattern, '').trim();
-        }
-        codeElement.data = node.data;
-        codeElement.properties.numberOfLines = numberOfLines;
-        if (preChild) {
-          preChild.data = node.data;
-          preChild.properties.numberOfLines = numberOfLines;
-        }
-        parent.children.splice(index, 1, codeElement);
-      } catch (err) {
-        if (err instanceof Error && /Unknown language/.test(err.message)) {
-          return;
-        }
-        throw err;
+      if (!DEFAULT_LANGS.includes(lang)) {
+        asyncNodesToProcess.push(
+          highlighter.loadLanguage(lang).then(() => {
+            traverseNode(node, index, parent, highlighter, lang, options);
+          })
+        );
+      } else {
+        traverseNode(node, index, parent, highlighter, lang, options);
       }
     });
+    await Promise.all(asyncNodesToProcess);
   };
+};
+
+const traverseNode = (
+  node: Element,
+  index: number,
+  parent: Element | Root | MdxJsxTextElementHast | MdxJsxFlowElementHast,
+  highlighter: Highlighter,
+  lang: ShikiLang,
+  options: RehypeSyntaxHighlightingOptions
+) => {
+  try {
+    const code = toString(node);
+    const lines = code.split('\n');
+    let linesToHighlight = getLinesToHighlight(node, lines.length);
+
+    const hast = highlighter.codeToHast(code, {
+      lang: lang ?? DEFAULT_LANG,
+      themes: {
+        light:
+          options.themes?.light ??
+          options.theme ??
+          (options.codeStyling === 'dark' ? DEFAULT_DARK_THEME : DEFAULT_LIGHT_THEME),
+        dark: options.themes?.dark ?? options.theme ?? DEFAULT_DARK_THEME,
+      },
+      colorReplacements: shikiColorReplacements,
+      tabindex: false,
+      tokenizeMaxLineLength: 1000,
+    });
+
+    const codeElement = hast.children[0] as Element;
+    if (!codeElement) return;
+
+    let lineNumber = 0;
+    visit(codeElement, 'element', (span, spanIndex, spanParent) => {
+      if (
+        !spanParent ||
+        spanParent.type !== 'element' ||
+        spanParent.tagName !== 'code' ||
+        span.tagName !== 'span' ||
+        (!span.children.length && spanIndex === spanParent.children.length - 1) ||
+        (typeof span.properties.class !== 'string' && !Array.isArray(span.properties.class)) ||
+        !span.properties.class.includes('line')
+      ) {
+        return;
+      }
+
+      lineNumber++;
+      if (linesToHighlight.includes(lineNumber)) {
+        if (typeof span.properties.class === 'string') {
+          span.properties.class += ' ' + LINE_HIGHLIGHT_CLASS;
+        } else {
+          span.properties.class = [...span.properties.class, LINE_HIGHLIGHT_CLASS];
+        }
+      }
+    });
+
+    const preChild = codeElement.children[0] as Element;
+    const numberOfLines = lineNumber;
+
+    node.data = node.data ?? {};
+    if (node.data.meta) {
+      node.data.meta = node.data.meta.replace(lineHighlightPattern, '').trim();
+    }
+    codeElement.data = node.data;
+    codeElement.properties.numberOfLines = numberOfLines;
+    if (preChild) {
+      preChild.data = node.data;
+      preChild.properties.numberOfLines = numberOfLines;
+    }
+    parent.children.splice(index, 1, codeElement);
+  } catch (err) {
+    if (err instanceof Error && /Unknown language/.test(err.message)) {
+      return;
+    }
+    throw err;
+  }
 };
 
 export { UNIQUE_LANGS, DEFAULT_LANG_ALIASES, SHIKI_THEMES, ShikiLang, ShikiTheme };

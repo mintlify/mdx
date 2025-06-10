@@ -460,3 +460,36 @@ export const SHIKI_THEMES = [
 
   'css-variables', // for users who want to use custom CSS to style their code blocks
 ] as const;
+
+export const DEFAULT_LANGS = [
+  'bash',
+  'blade',
+  'c',
+  'css',
+  'c#',
+  'c++',
+  'dart',
+  'diff',
+  'go',
+  'html',
+  'java',
+  'javascript',
+  'jsx',
+  'json',
+  'kotlin',
+  'log',
+  'lua',
+  'markdown',
+  'mdx',
+  'php',
+  'powershell',
+  'python',
+  'ruby',
+  'rust',
+  'solidity',
+  'swift',
+  'toml',
+  'typescript',
+  'tsx',
+  'yaml',
+];

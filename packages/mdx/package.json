@@ -5,7 +5,9 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -67,6 +69,7 @@
   },
   "dependencies": {
     "hast-util-to-string": "^3.0.1",
+    "mdast-util-mdx-jsx": "^3.2.0",
     "next-mdx-remote-client": "^1.0.3",
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.0",

@@ -445,6 +445,7 @@ __metadata:
     eslint-config-prettier: "npm:8.x"
     eslint-plugin-unused-imports: "npm:^3.x"
     hast-util-to-string: "npm:^3.0.1"
+    mdast-util-mdx-jsx: "npm:^3.2.0"
     next-mdx-remote-client: "npm:^1.0.3"
     prettier: "npm:^3.1.1"
     prettier-plugin-tailwindcss: "npm:^0.6.8"
@@ -4200,6 +4201,26 @@ __metadata:
     unist-util-stringify-position: "npm:^4.0.0"
     vfile-message: "npm:^4.0.0"
   checksum: 10c0/1b0b64215efbbbb1ee9ba2a2b3e5f11859dada7dff162949a0d503aefbd75c0308f17d404df126c54acea06d2224905915b2cac2e6c999514c919bd963b8de24
+  languageName: node
+  linkType: hard
+
+"mdast-util-mdx-jsx@npm:^3.2.0":
+  version: 3.2.0
+  resolution: "mdast-util-mdx-jsx@npm:3.2.0"
+  dependencies:
+    "@types/estree-jsx": "npm:^1.0.0"
+    "@types/hast": "npm:^3.0.0"
+    "@types/mdast": "npm:^4.0.0"
+    "@types/unist": "npm:^3.0.0"
+    ccount: "npm:^2.0.0"
+    devlop: "npm:^1.1.0"
+    mdast-util-from-markdown: "npm:^2.0.0"
+    mdast-util-to-markdown: "npm:^2.0.0"
+    parse-entities: "npm:^4.0.0"
+    stringify-entities: "npm:^4.0.0"
+    unist-util-stringify-position: "npm:^4.0.0"
+    vfile-message: "npm:^4.0.0"
+  checksum: 10c0/3acadaf3b962254f7ad2990fed4729961dc0217ca31fde9917986e880843f3ecf3392b1f22d569235cacd180d50894ad266db7af598aedca69d330d33c7ac613
   languageName: node
   linkType: hard
 

@@ -19,7 +19,7 @@ You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/m
      });
 
      if ('error' in mdxSource) {
-      // handle error case
+       // handle error case
      }
 
      return { props: { mdxSource } };
@@ -33,16 +33,5 @@ You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/m
    ```tsx
    export default function Page({ mdxSource }: InferGetStaticPropsType<typeof getStaticProps>) {
      return <MDXClient {...mdxSource} />;
-   }
-   ```
-
-3. Import `@mintlify/mdx/dist/styles.css` inside your `_app.tsx` file. This file contains the styles for the code syntax highlighting.
-
-   ```tsx
-   import '@mintlify/mdx/dist/styles.css';
-   import { AppProps } from 'next/app';
-
-   export default function App({ Component, pageProps }: AppProps) {
-     return <Component {...pageProps} />;
    }
    ```

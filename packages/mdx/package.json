@@ -1,6 +1,6 @@
 {
   "name": "@mintlify/mdx",
-  "version": "1.0.2",
+  "version": "2.0.0",
   "description": "Markdown parser from Mintlify",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -8,6 +8,16 @@
   "files": [
     "dist"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./plugins": {
+      "import": "./dist/plugins/index.js",
+      "types": "./dist/plugins/index.d.ts"
+    }
+  },
   "type": "module",
   "publishConfig": {
     "access": "public",
@@ -19,15 +29,14 @@
   },
   "scripts": {
     "prepare": "npm run build",
-    "build": "tsc --project tsconfig.build.json && yarn copy:css",
+    "build": "tsc --project tsconfig.build.json",
     "clean:build": "rimraf dist",
     "clean:all": "rimraf node_modules .eslintcache && yarn clean:build",
     "watch": "tsc --watch",
     "type": "tsc --noEmit",
     "lint": "eslint . --cache",
     "format": "prettier . --write",
-    "format:check": "prettier . --check",
-    "copy:css": "cp -r ./src/styles/prism.css ./dist/styles.css"
+    "format:check": "prettier . --check"
   },
   "author": "Mintlify, Inc.",
   "license": "MIT",
@@ -38,8 +47,10 @@
     "@mintlify/ts-config": "^2.0.2",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/recommended": "1.x",
+    "@types/hast": "^3.0.4",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.0",
+    "@types/unist": "^3.0.3",
     "@typescript-eslint/eslint-plugin": "6.x",
     "@typescript-eslint/parser": "6.x",
     "eslint": "8.x",
@@ -57,15 +68,14 @@
     "react-dom": "^18.3.1"
   },
   "dependencies": {
-    "@types/hast": "^3.0.4",
-    "@types/unist": "^3.0.3",
     "hast-util-to-string": "^3.0.1",
+    "mdast-util-mdx-jsx": "^3.2.0",
     "next-mdx-remote-client": "^1.0.3",
-    "refractor": "^4.8.1",
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "remark-smartypants": "^3.0.2",
+    "shiki": "^3.6.0",
     "unified": "^11.0.0",
     "unist-util-visit": "^5.0.0"
   }

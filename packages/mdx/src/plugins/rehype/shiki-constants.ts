@@ -318,37 +318,3 @@ export const DEFAULT_LANG_ALIASES: Record<string, ShikiLang> = {
 };
 
 export const UNIQUE_LANGS = Array.from(new Set(Object.values(DEFAULT_LANG_ALIASES)));
-
-export const BASE_LANGUAGES = [
-  'bash',
-  'blade',
-  'c',
-  'css',
-  'c#',
-  'c++',
-  'dart',
-  'diff',
-  'go',
-  'html',
-  'java',
-  'javascript',
-  'jsx',
-  'json',
-  'kotlin',
-  'log',
-  'lua',
-  'markdown',
-  'mdx',
-  'php',
-  'powershell',
-  'python',
-  'ruby',
-  'rust',
-  'solidity',
-  'swift',
-  'terraform',
-  'text',
-  'typescript',
-  'tsx',
-  'yaml',
-];

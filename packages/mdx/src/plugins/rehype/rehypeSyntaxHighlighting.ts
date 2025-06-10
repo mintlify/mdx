@@ -10,12 +10,7 @@ import {
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
-import {
-  BASE_LANGUAGES,
-  DEFAULT_LANG_ALIASES,
-  UNIQUE_LANGS,
-  type ShikiLang,
-} from './shiki-constants.js';
+import { DEFAULT_LANG_ALIASES, UNIQUE_LANGS, type ShikiLang } from './shiki-constants.js';
 
 const shikiColorReplacements: Partial<Record<BundledTheme, string | Record<string, string>>> = {
   'dark-plus': {
@@ -31,8 +26,6 @@ const shikiColorReplacements: Partial<Record<BundledTheme, string | Record<strin
 };
 
 export type RehypeSyntaxHighlightingOptions = {
-  ignoreMissing?: boolean;
-  alias?: Record<string, ShikiLang>;
   theme?: BuiltinTheme;
   themes?: Record<'light' | 'dark', BuiltinTheme>;
   codeStyling?: 'dark' | 'system';
@@ -61,10 +54,17 @@ async function getHighlighter(): Promise<Highlighter> {
 export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?], Root, Root> = (
   options = {}
 ) => {
-  const languageAliases = { ...options.alias, ...DEFAULT_LANG_ALIASES };
-
   return async (tree) => {
     const highlighter = await getHighlighter();
+    if (options.theme) {
+      await highlighter.loadTheme(options.theme);
+    }
+    if (options.themes) {
+      await Promise.all([
+        highlighter.loadTheme(options.themes.dark),
+        highlighter.loadTheme(options.themes.light),
+      ]);
+    }
 
     visit(tree, 'element', (node, index, parent) => {
       const child = node.children[0];
@@ -90,9 +90,11 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
       }
 
       let lang =
-        getLanguage(node, languageAliases) ?? getLanguage(child, languageAliases) ?? 'text';
+        getLanguage(node, DEFAULT_LANG_ALIASES) ??
+        getLanguage(child, DEFAULT_LANG_ALIASES) ??
+        'text';
 
-      if (!BASE_LANGUAGES.includes(lang)) {
+      if (!UNIQUE_LANGS.includes(lang)) {
         highlighter.loadLanguage(lang as BundledLanguage);
       }
 
@@ -104,8 +106,11 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         const hast = highlighter.codeToHast(code, {
           lang: lang ?? 'text',
           themes: {
-            light: 'github-light-default',
-            dark: 'dark-plus',
+            light:
+              options.themes?.light ??
+              options.theme ??
+              (options.codeStyling === 'dark' ? 'dark-plus' : 'github-light-default'),
+            dark: options.themes?.dark ?? options.theme ?? 'dark-plus',
           },
           colorReplacements: shikiColorReplacements,
           tabindex: false,
@@ -154,7 +159,7 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         }
         parent.children.splice(index, 1, codeElement);
       } catch (err) {
-        if (options.ignoreMissing && /Unknown language/.test((err as Error).message)) {
+        if (err instanceof Error && /Unknown language/.test(err.message)) {
           return;
         }
         throw err;
@@ -208,3 +213,5 @@ function getLinesToHighlight(node: Element, maxLines: number): number[] {
 
   return Array.from(lineNumbers).sort((a, b) => a - b);
 }
+
+export { UNIQUE_LANGS, ShikiLang, DEFAULT_LANG_ALIASES };

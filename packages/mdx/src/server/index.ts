@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkSmartypants from 'remark-smartypants';
 
-import { rehypeSyntaxHighlighting } from '../plugins/index.js';
+import { rehypeSyntaxHighlighting, RehypeSyntaxHighlightingOptions } from '../plugins/index.js';
 import type { SerializeOptions } from '../types/index.js';
 
 export const serialize = async ({
@@ -13,11 +13,13 @@ export const serialize = async ({
   mdxOptions,
   scope,
   parseFrontmatter = true,
+  syntaxHighlightingOptions,
 }: {
   source: string;
   mdxOptions?: SerializeOptions['mdxOptions'];
   scope?: SerializeOptions['scope'];
   parseFrontmatter?: SerializeOptions['parseFrontmatter'];
+  syntaxHighlightingOptions?: RehypeSyntaxHighlightingOptions;
 }) => {
   try {
     return await baseSerialize({
@@ -33,12 +35,7 @@ export const serialize = async ({
           ],
           rehypePlugins: [
             rehypeKatex,
-            [
-              rehypeSyntaxHighlighting,
-              {
-                ignoreMissing: true,
-              },
-            ],
+            [rehypeSyntaxHighlighting, syntaxHighlightingOptions],
             ...(mdxOptions?.rehypePlugins || []),
           ],
           format: mdxOptions?.format || 'mdx',
@@ -59,11 +56,13 @@ export const rscSerialize = async ({
   mdxOptions,
   scope,
   parseFrontmatter = true,
+  syntaxHighlightingOptions,
 }: {
   source: string;
   mdxOptions?: SerializeOptions['mdxOptions'];
   scope?: SerializeOptions['scope'];
   parseFrontmatter?: SerializeOptions['parseFrontmatter'];
+  syntaxHighlightingOptions?: RehypeSyntaxHighlightingOptions;
 }) => {
   try {
     return await evaluate({
@@ -79,12 +78,7 @@ export const rscSerialize = async ({
           ],
           rehypePlugins: [
             rehypeKatex,
-            [
-              rehypeSyntaxHighlighting,
-              {
-                ignoreMissing: true,
-              },
-            ],
+            [rehypeSyntaxHighlighting, syntaxHighlightingOptions],
             ...(mdxOptions?.rehypePlugins || []),
           ],
           format: mdxOptions?.format || 'mdx',

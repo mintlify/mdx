@@ -5,7 +5,7 @@ import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkSmartypants from 'remark-smartypants';
 
-import { rehypeSyntaxHighlighting } from '../plugins/index.js';
+import { rehypeSyntaxHighlighting, RehypeSyntaxHighlightingOptions } from '../plugins/index.js';
 
 export async function MDXRemote({
   source,
@@ -13,12 +13,14 @@ export async function MDXRemote({
   scope,
   components,
   parseFrontmatter,
+  syntaxHighlightingOptions,
 }: {
   source: string;
   mdxOptions?: SerializeOptions['mdxOptions'];
   scope?: SerializeOptions['scope'];
   components?: MDXComponents;
   parseFrontmatter?: SerializeOptions['parseFrontmatter'];
+  syntaxHighlightingOptions?: RehypeSyntaxHighlightingOptions;
 }) {
   return (
     // @ts-expect-error Server Component
@@ -36,7 +38,7 @@ export async function MDXRemote({
           ],
           rehypePlugins: [
             rehypeKatex,
-            [rehypeSyntaxHighlighting, { ignoreMissing: true }],
+            [rehypeSyntaxHighlighting, syntaxHighlightingOptions],
             ...(mdxOptions?.rehypePlugins || []),
           ],
           format: mdxOptions?.format || 'mdx',

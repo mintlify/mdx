@@ -166,9 +166,6 @@ const traverseNode = (
     const numberOfLines = lineNumber;
 
     node.data = node.data ?? {};
-    if (node.data.meta) {
-      node.data.meta = node.data.meta.replace(lineHighlightPattern, '').trim();
-    }
     codeElement.data = node.data;
     codeElement.properties.numberOfLines = numberOfLines;
     if (preChild) {

@@ -8,6 +8,7 @@ import {
   DEFAULT_LANG_ALIASES,
   SHIKI_THEMES,
   UNIQUE_LANGS,
+  DEFAULT_LANG,
   type ShikiLang,
   type ShikiTheme,
 } from './shiki-constants.js';
@@ -92,7 +93,7 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
       let lang =
         getLanguage(node, DEFAULT_LANG_ALIASES) ??
         getLanguage(child, DEFAULT_LANG_ALIASES) ??
-        'text';
+        DEFAULT_LANG;
 
       try {
         const code = toString(node);
@@ -100,7 +101,7 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         let linesToHighlight = getLinesToHighlight(node, lines.length);
 
         const hast = highlighter.codeToHast(code, {
-          lang: lang ?? 'text',
+          lang: lang ?? DEFAULT_LANG,
           themes: {
             light:
               options.themes?.light ??

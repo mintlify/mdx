@@ -1,4 +1,3 @@
-import '@mintlify/mdx/dist/styles.css';
 import type { Metadata } from 'next';
 
 import '@/app/globals.css';

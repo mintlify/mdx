@@ -5,9 +5,7 @@
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "sideEffects": false,
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -29,15 +27,14 @@
   },
   "scripts": {
     "prepare": "npm run build",
-    "build": "tsc --project tsconfig.build.json && yarn copy:css",
+    "build": "tsc --project tsconfig.build.json",
     "clean:build": "rimraf dist",
     "clean:all": "rimraf node_modules .eslintcache && yarn clean:build",
     "watch": "tsc --watch",
     "type": "tsc --noEmit",
     "lint": "eslint . --cache",
     "format": "prettier . --write",
-    "format:check": "prettier . --check",
-    "copy:css": "cp -r ./src/styles/prism.css ./dist/styles.css"
+    "format:check": "prettier . --check"
   },
   "author": "Mintlify, Inc.",
   "license": "MIT",

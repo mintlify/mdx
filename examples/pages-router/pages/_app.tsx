@@ -1,4 +1,3 @@
-import '@mintlify/mdx/dist/styles.css';
 import { AppProps } from 'next/app';
 
 import '@/styles/globals.css';

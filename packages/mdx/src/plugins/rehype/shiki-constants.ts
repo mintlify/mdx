@@ -2,6 +2,8 @@ import type { BundledLanguage } from 'shiki';
 
 export type ShikiLang = BundledLanguage | 'text';
 
+export const DEFAULT_LANG = 'text' as const;
+
 export const DEFAULT_LANG_ALIASES: Record<string, ShikiLang> = {
   abap: 'abap',
   'actionscript-3': 'actionscript-3',

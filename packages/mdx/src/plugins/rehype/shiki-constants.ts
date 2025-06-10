@@ -1,8 +1,29 @@
-import type { BundledLanguage } from 'shiki';
+import type { BundledLanguage } from 'shiki/types';
 
 export type ShikiLang = BundledLanguage | 'text';
+export type ShikiTheme = (typeof SHIKI_THEMES)[number];
 
 export const DEFAULT_LANG = 'text' as const;
+export const DEFAULT_DARK_THEME: ShikiTheme = 'dark-plus' as const;
+export const DEFAULT_LIGHT_THEME: ShikiTheme = 'github-light-default' as const;
+export const DEFAULT_THEMES: [ShikiTheme, ShikiTheme] = [
+  DEFAULT_LIGHT_THEME,
+  DEFAULT_DARK_THEME,
+] as const;
+
+export const shikiColorReplacements: Partial<Record<ShikiTheme, string | Record<string, string>>> =
+  {
+    'dark-plus': {
+      '#1e1e1e': 'transparent',
+      '#569cd6': '#9cdcfe',
+      '#c8c8c8': '#f3f7f6',
+      '#d4d4d4': '#f3f7f6',
+    },
+    'github-light-default': {
+      '#fff': 'transparent',
+      '#ffffff': 'transparent',
+    },
+  };
 
 export const DEFAULT_LANG_ALIASES: Record<string, ShikiLang> = {
   abap: 'abap',
@@ -383,5 +404,3 @@ export const SHIKI_THEMES = [
   'vitesse-dark',
   'vitesse-light',
 ] as const;
-
-export type ShikiTheme = (typeof SHIKI_THEMES)[number];

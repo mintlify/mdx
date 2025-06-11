@@ -18,12 +18,7 @@ import {
   DEFAULT_THEMES,
   DEFAULT_LANGS,
 } from './shiki-constants.js';
-import {
-  getLanguage,
-  getLinesToHighlight,
-  lineHighlightPattern,
-  LINE_HIGHLIGHT_CLASS,
-} from './utils.js';
+import { getLanguage } from './utils.js';
 
 export type RehypeSyntaxHighlightingOptions = {
   theme?: ShikiTheme;
@@ -118,8 +113,6 @@ const traverseNode = (
 ) => {
   try {
     const code = toString(node);
-    const lines = code.split('\n');
-    let linesToHighlight = getLinesToHighlight(node, lines.length);
 
     const hast = highlighter.codeToHast(code, {
       lang: lang ?? DEFAULT_LANG,
@@ -139,28 +132,6 @@ const traverseNode = (
     if (!codeElement) return;
 
     let lineNumber = 0;
-    visit(codeElement, 'element', (span, spanIndex, spanParent) => {
-      if (
-        !spanParent ||
-        spanParent.type !== 'element' ||
-        spanParent.tagName !== 'code' ||
-        span.tagName !== 'span' ||
-        (!span.children.length && spanIndex === spanParent.children.length - 1) ||
-        (typeof span.properties.class !== 'string' && !Array.isArray(span.properties.class)) ||
-        !span.properties.class.includes('line')
-      ) {
-        return;
-      }
-
-      lineNumber++;
-      if (linesToHighlight.includes(lineNumber)) {
-        if (typeof span.properties.class === 'string') {
-          span.properties.class += ' ' + LINE_HIGHLIGHT_CLASS;
-        } else {
-          span.properties.class = [...span.properties.class, LINE_HIGHLIGHT_CLASS];
-        }
-      }
-    });
 
     const preChild = codeElement.children[0] as Element;
     const numberOfLines = lineNumber;

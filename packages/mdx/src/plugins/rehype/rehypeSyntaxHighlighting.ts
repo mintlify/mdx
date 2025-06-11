@@ -131,17 +131,12 @@ const traverseNode = (
     const codeElement = hast.children[0] as Element;
     if (!codeElement) return;
 
-    let lineNumber = 0;
-
     const preChild = codeElement.children[0] as Element;
-    const numberOfLines = lineNumber;
 
     node.data = node.data ?? {};
     codeElement.data = node.data;
-    codeElement.properties.numberOfLines = numberOfLines;
     if (preChild) {
       preChild.data = node.data;
-      preChild.properties.numberOfLines = numberOfLines;
     }
     parent.children.splice(index, 1, codeElement);
   } catch (err) {

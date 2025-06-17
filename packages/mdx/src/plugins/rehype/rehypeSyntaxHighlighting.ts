@@ -17,6 +17,7 @@ import {
   DEFAULT_LIGHT_THEME,
   DEFAULT_THEMES,
   DEFAULT_LANGS,
+  SHIKI_TRANSFORMERS,
 } from './shiki-constants.js';
 import { getLanguage } from './utils.js';
 
@@ -126,6 +127,7 @@ const traverseNode = (
       colorReplacements: shikiColorReplacements,
       tabindex: false,
       tokenizeMaxLineLength: 1000,
+      transformers: SHIKI_TRANSFORMERS,
     });
 
     const codeElement = hast.children[0] as Element;

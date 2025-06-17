@@ -433,6 +433,7 @@ __metadata:
     "@mintlify/eslint-config-typescript": "npm:^1.0.9"
     "@mintlify/prettier-config": "npm:^1.0.1"
     "@mintlify/ts-config": "npm:^2.0.2"
+    "@shikijs/transformers": "npm:^3.6.0"
     "@trivago/prettier-plugin-sort-imports": "npm:^4.3.0"
     "@tsconfig/recommended": "npm:1.x"
     "@types/hast": "npm:^3.0.4"
@@ -690,6 +691,16 @@ __metadata:
   dependencies:
     "@shikijs/types": "npm:3.6.0"
   checksum: 10c0/33be969bc56ea86590d63042a24ab715527f30f9488cca6fe17dfff67894ca1e75e83ddca9c9b5d449a8e8586ad014ace8b92b389e73be2c35280d6f805b87a3
+  languageName: node
+  linkType: hard
+
+"@shikijs/transformers@npm:^3.6.0":
+  version: 3.6.0
+  resolution: "@shikijs/transformers@npm:3.6.0"
+  dependencies:
+    "@shikijs/core": "npm:3.6.0"
+    "@shikijs/types": "npm:3.6.0"
+  checksum: 10c0/c08d65bffe2c484ce2e6b0b3016379833fa79d53e22fdfa575c10d0b6c3a35580742a2e9ef2032288178d87c99505544f62bde01434d79c87f0ff9b2c4f03fb6
   languageName: node
   linkType: hard
 

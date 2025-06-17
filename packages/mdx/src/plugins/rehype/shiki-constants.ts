@@ -1,5 +1,17 @@
+import {
+  transformerNotationHighlight,
+  transformerNotationFocus,
+  transformerMetaHighlight,
+  transformerNotationDiff,
+} from '@shikijs/transformers';
+import type { ShikiTransformer } from '@shikijs/types';
 import { createCssVariablesTheme } from 'shiki/core';
 import type { BundledLanguage, ThemeRegistration } from 'shiki/types';
+
+export const LINE_HIGHLIGHT_CLASS_NAME = 'line-highlight';
+export const LINE_FOCUS_CLASS_NAME = 'line-focus';
+export const LINE_DIFF_ADD_CLASS_NAME = 'line-diff line-add';
+export const LINE_DIFF_REMOVE_CLASS_NAME = 'line-diff line-remove';
 
 export type ShikiLang = BundledLanguage | 'text';
 export type ShikiTheme = (typeof SHIKI_THEMES)[number];
@@ -492,4 +504,27 @@ export const DEFAULT_LANGS = [
   'typescript',
   'tsx',
   'yaml',
+];
+
+export const matchAlgorithm = {
+  matchAlgorithm: 'v3',
+} as const;
+
+export const SHIKI_TRANSFORMERS: ShikiTransformer[] = [
+  transformerMetaHighlight({
+    className: LINE_HIGHLIGHT_CLASS_NAME,
+  }),
+  transformerNotationHighlight({
+    ...matchAlgorithm,
+    classActiveLine: LINE_HIGHLIGHT_CLASS_NAME,
+  }),
+  transformerNotationFocus({
+    ...matchAlgorithm,
+    classActiveLine: LINE_FOCUS_CLASS_NAME,
+  }),
+  transformerNotationDiff({
+    ...matchAlgorithm,
+    classLineAdd: LINE_DIFF_ADD_CLASS_NAME,
+    classLineRemove: LINE_DIFF_REMOVE_CLASS_NAME,
+  }),
 ];

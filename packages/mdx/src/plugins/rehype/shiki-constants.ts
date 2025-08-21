@@ -81,9 +81,6 @@ export const shikiColorReplacements: Partial<Record<ShikiTheme, string | Record<
   {
     'dark-plus': {
       '#1e1e1e': 'transparent',
-      '#569cd6': '#9cdcfe',
-      '#c8c8c8': '#f3f7f6',
-      '#d4d4d4': '#f3f7f6',
     },
     'github-light-default': {
       '#fff': 'transparent',

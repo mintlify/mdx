@@ -69,6 +69,7 @@
   },
   "dependencies": {
     "@shikijs/transformers": "^3.11.0",
+    "@shikijs/twoslash": "^3.12.2",
     "hast-util-to-string": "^3.0.1",
     "mdast-util-mdx-jsx": "^3.2.0",
     "next-mdx-remote-client": "^1.0.3",
@@ -77,6 +78,7 @@
     "remark-math": "^6.0.0",
     "remark-smartypants": "^3.0.2",
     "shiki": "^3.11.0",
+    "twoslash-cdn": "^0.3.4",
     "unified": "^11.0.0",
     "unist-util-visit": "^5.0.0"
   }

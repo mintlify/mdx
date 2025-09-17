@@ -43,7 +43,7 @@ const twoslashOptions: TransformerTwoslashOptions = {
   },
   renderer: rendererRich(),
   langs: ['ts', 'typescript', 'js', 'javascript', 'tsx', 'jsx'],
-  explicitTrigger: true,
+  explicitTrigger: /mint-twoslash/,
   twoslashOptions: { compilerOptions: twoslashCompilerOptions },
 };
 
@@ -147,8 +147,18 @@ const traverseNode = (
   try {
     const code = toString(node);
 
+    const meta = node.data?.meta?.split(' ') ?? [];
+    const twoslashIndex = meta.findIndex((str) => str.toLowerCase() === 'mint-twoslash');
+    const shouldUseTwoslash = twoslashIndex > -1;
+
+    if (node.data && node.data.meta && shouldUseTwoslash) {
+      meta.splice(twoslashIndex, 1);
+      node.data.meta = meta.join(' ').trim() || undefined;
+    }
+
     const hast = highlighter.codeToHast(code, {
       lang: lang ?? DEFAULT_LANG,
+      meta: shouldUseTwoslash ? { __raw: 'mint-twoslash' } : undefined,
       themes: {
         light:
           options.themes?.light ??

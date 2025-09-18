@@ -27,6 +27,6 @@
     "typescript": "^5"
   },
   "resolutions": {
-    "sharp": "^0.33.1"
+    "sharp": "0.33.1"
   }
 }

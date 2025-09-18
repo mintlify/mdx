@@ -1,15 +1,8 @@
-import {
-  createTransformerFactory,
-  rendererRich,
-  transformerTwoslash,
-  type TransformerTwoslashOptions,
-} from '@shikijs/twoslash';
+import { transformerTwoslash } from '@shikijs/twoslash';
 import type { Element, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from 'mdast-util-mdx-jsx';
 import { createHighlighter, type Highlighter } from 'shiki';
-import { createTwoslashFromCDN } from 'twoslash-cdn';
-import ts from 'typescript';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
@@ -27,34 +20,19 @@ import {
   DEFAULT_LANGS,
   SHIKI_TRANSFORMERS,
 } from './shiki-constants.js';
+import {
+  cdnTransformerTwoslash,
+  cdnTwoslash,
+  getTwoslashOptions,
+  parseLineComment,
+} from './twoslash/config.js';
 import { getLanguage } from './utils.js';
-
-const twoslashCompilerOptions = {
-  target: ts.ScriptTarget.ESNext,
-  lib: ['ESNext', 'DOM', 'esnext', 'dom', 'es2020'],
-};
-
-const twoslashOptions: TransformerTwoslashOptions = {
-  onTwoslashError(err, code, lang) {
-    console.error(JSON.stringify({ err, code, lang }));
-  },
-  onShikiError(err, code, lang) {
-    console.error(JSON.stringify({ err, code, lang }));
-  },
-  renderer: rendererRich(),
-  langs: ['ts', 'typescript', 'js', 'javascript', 'tsx', 'jsx'],
-  explicitTrigger: /mint-twoslash/,
-  twoslashOptions: { compilerOptions: twoslashCompilerOptions },
-};
-
-const cdnTwoslash = createTwoslashFromCDN({ compilerOptions: twoslashCompilerOptions });
-
-const cdnTransformerTwoslash = createTransformerFactory(cdnTwoslash.runSync);
 
 export type RehypeSyntaxHighlightingOptions = {
   theme?: ShikiTheme;
   themes?: Record<'light' | 'dark', ShikiTheme>;
   codeStyling?: 'dark' | 'system';
+  linkMap?: Map<string, string>;
 };
 
 let highlighterPromise: Promise<Highlighter> | null = null;
@@ -73,7 +51,8 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
   options = {}
 ) => {
   return async (tree) => {
-    const asyncNodesToProcess: Promise<void>[] = [];
+    const nodesToProcess: Promise<void>[] = [];
+
     const themesToLoad: ShikiTheme[] = [];
     if (options.themes) {
       themesToLoad.push(options.themes.dark);
@@ -120,32 +99,35 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         getLanguage(child, DEFAULT_LANG_ALIASES) ??
         DEFAULT_LANG;
 
-      asyncNodesToProcess.push(
+      nodesToProcess.push(
         (async () => {
           await cdnTwoslash.prepareTypes(toString(node));
-          if (!DEFAULT_LANGS.includes(lang)) {
-            await highlighter.loadLanguage(lang);
-            traverseNode(node, index, parent, highlighter, lang, options);
-          } else {
-            traverseNode(node, index, parent, highlighter, lang, options);
-          }
+          if (!DEFAULT_LANGS.includes(lang)) await highlighter.loadLanguage(lang);
+          traverseNode({ node, index, parent, highlighter, lang, options });
         })()
       );
     });
-    await Promise.all(asyncNodesToProcess);
+    await Promise.all(nodesToProcess);
   };
 };
 
-const traverseNode = (
-  node: Element,
-  index: number,
-  parent: Element | Root | MdxJsxTextElementHast | MdxJsxFlowElementHast,
-  highlighter: Highlighter,
-  lang: ShikiLang,
-  options: RehypeSyntaxHighlightingOptions
-) => {
+function traverseNode({
+  node,
+  index,
+  parent,
+  highlighter,
+  lang,
+  options,
+}: {
+  node: Element;
+  index: number;
+  parent: Element | Root | MdxJsxTextElementHast | MdxJsxFlowElementHast;
+  highlighter: Highlighter;
+  lang: ShikiLang;
+  options: RehypeSyntaxHighlightingOptions;
+}) {
   try {
-    const code = toString(node);
+    let code = toString(node);
 
     const meta = node.data?.meta?.split(' ') ?? [];
     const twoslashIndex = meta.findIndex((str) => str.toLowerCase() === 'mint-twoslash');
@@ -155,6 +137,20 @@ const traverseNode = (
       meta.splice(twoslashIndex, 1);
       node.data.meta = meta.join(' ').trim() || undefined;
     }
+
+    const linkMap = options.linkMap ?? new Map();
+    const splitCode = code.split('\n');
+    for (const [i, line] of splitCode.entries()) {
+      const parsedLineComment = parseLineComment(line);
+      if (!parsedLineComment) continue;
+      const { word, href } = parsedLineComment;
+      linkMap.set(word, href);
+      splitCode.splice(i, 1);
+    }
+
+    code = splitCode.join('\n');
+
+    const twoslashOptions = getTwoslashOptions({ linkMap });
 
     const hast = highlighter.codeToHast(code, {
       lang: lang ?? DEFAULT_LANG,
@@ -195,6 +191,6 @@ const traverseNode = (
     }
     throw err;
   }
-};
+}
 
 export { UNIQUE_LANGS, DEFAULT_LANG_ALIASES, SHIKI_THEMES, ShikiLang, ShikiTheme };

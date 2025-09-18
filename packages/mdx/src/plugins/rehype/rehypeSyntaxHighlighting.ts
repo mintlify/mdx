@@ -1,4 +1,3 @@
-import { transformerTwoslash } from '@shikijs/twoslash';
 import type { Element, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from 'mdast-util-mdx-jsx';
@@ -21,10 +20,10 @@ import {
   SHIKI_TRANSFORMERS,
 } from './shiki-constants.js';
 import {
-  cdnTransformerTwoslash,
-  cdnTwoslash,
   getTwoslashOptions,
   parseLineComment,
+  getCdnTwoslashTransformer,
+  cdnTwoslash,
 } from './twoslash/config.js';
 import { getLanguage } from './utils.js';
 
@@ -101,9 +100,8 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
 
       nodesToProcess.push(
         (async () => {
-          await cdnTwoslash.prepareTypes(toString(node));
           if (!DEFAULT_LANGS.includes(lang)) await highlighter.loadLanguage(lang);
-          traverseNode({ node, index, parent, highlighter, lang, options });
+          await traverseNode({ node, index, parent, highlighter, lang, options });
         })()
       );
     });
@@ -111,7 +109,7 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
   };
 };
 
-function traverseNode({
+async function traverseNode({
   node,
   index,
   parent,
@@ -150,7 +148,10 @@ function traverseNode({
 
     code = splitCode.join('\n');
 
+    await cdnTwoslash.init();
+    await cdnTwoslash.prepareTypes(code);
     const twoslashOptions = getTwoslashOptions({ linkMap });
+    const cdnTwoslashTransformer = getCdnTwoslashTransformer(twoslashOptions);
 
     const hast = highlighter.codeToHast(code, {
       lang: lang ?? DEFAULT_LANG,
@@ -165,11 +166,7 @@ function traverseNode({
       colorReplacements: shikiColorReplacements,
       tabindex: false,
       tokenizeMaxLineLength: 1000,
-      transformers: [
-        ...SHIKI_TRANSFORMERS,
-        transformerTwoslash(twoslashOptions),
-        cdnTransformerTwoslash(twoslashOptions),
-      ],
+      transformers: [...SHIKI_TRANSFORMERS, cdnTwoslashTransformer],
     });
 
     const codeElement = hast.children[0] as Element;

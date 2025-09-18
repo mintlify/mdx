@@ -1,26 +1,71 @@
 import {
-  createTransformerFactory,
   rendererRich,
+  createTransformerFactory,
   type TransformerTwoslashOptions,
 } from '@shikijs/twoslash';
 import type { ElementContent } from 'hast';
 import type { ShikiTransformer } from 'shiki/types';
-import { createTwoslashFromCDN, type TwoslashCdnReturn } from 'twoslash-cdn';
-import ts from 'typescript';
+import { createTwoslasher, type TwoslashInstance } from 'twoslash';
+import { createTwoslashFromCDN, TwoslashCdnReturn } from 'twoslash-cdn';
+import * as ts from 'typescript';
 
 type TransformerFactory = (options?: TransformerTwoslashOptions) => ShikiTransformer;
 
 const twoslashCompilerOptions: ts.CompilerOptions = {
   target: ts.ScriptTarget.ESNext,
   lib: ['ESNext', 'DOM', 'esnext', 'dom', 'es2020'],
+  allowJs: true,
+  allowSyntheticDefaultImports: true,
+  allowUnreachableCode: true,
+  alwaysStrict: false,
 };
 
-export const cdnTwoslash: TwoslashCdnReturn = createTwoslashFromCDN({
+const fsMap: Map<string, string> = new Map();
+const twoslashStorageMap = new Map();
+
+export const cdnTwoslash = createTwoslashFromCDN({
   compilerOptions: twoslashCompilerOptions,
+  fsMap,
+  storage: {
+    getItemRaw(key) {
+      return twoslashStorageMap.get(key);
+    },
+    setItemRaw(key, value) {
+      twoslashStorageMap.set(key, value);
+    },
+  },
 });
-export const cdnTransformerTwoslash: TransformerFactory = createTransformerFactory(
+
+let cachedInstance: TwoslashCdnReturn | undefined;
+
+export const cdnTwoslashTransformer: TransformerFactory = createTransformerFactory(
   cdnTwoslash.runSync
 );
+
+export function getCdnTwoslashTransformer(options: TransformerTwoslashOptions): ShikiTransformer {
+  function getInstance() {
+    cachedInstance ??= createTwoslashFromCDN({
+      compilerOptions: twoslashCompilerOptions,
+      fsMap,
+      storage: {
+        getItemRaw(key) {
+          return twoslashStorageMap.get(key);
+        },
+        setItemRaw(key, value) {
+          twoslashStorageMap.set(key, value);
+        },
+      },
+    });
+    return cachedInstance;
+  }
+
+  return createTransformerFactory(
+    // lazy load Twoslash instance so it works on serverless platforms
+    ((...args) => getInstance().runSync(...args)) as TwoslashInstance
+  )({
+    ...options,
+  });
+}
 
 function onTwoslashError(err: unknown, code: string, lang: string) {
   console.error(JSON.stringify({ err, code, lang }));
@@ -69,6 +114,7 @@ export function getTwoslashOptions(
     langs: ['ts', 'typescript', 'js', 'javascript', 'tsx', 'jsx'],
     explicitTrigger: /mint-twoslash/,
     twoslashOptions: {
+      tsModule: ts,
       compilerOptions: twoslashCompilerOptions,
     },
   };

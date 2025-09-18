@@ -16,6 +16,10 @@
     "./plugins": {
       "import": "./dist/plugins/index.js",
       "types": "./dist/plugins/index.d.ts"
+    },
+    "./ui": {
+      "import": "./dist/ui/index.js",
+      "types": "./dist/ui/index.d.ts"
     }
   },
   "type": "module",
@@ -45,6 +49,7 @@
     "@mintlify/eslint-config-typescript": "^1.0.9",
     "@mintlify/prettier-config": "^1.0.1",
     "@mintlify/ts-config": "^2.0.2",
+    "@radix-ui/react-popover": "^1.1.15",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/recommended": "1.x",
     "@types/hast": "^3.0.4",

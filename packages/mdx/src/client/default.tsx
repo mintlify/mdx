@@ -1,6 +1,6 @@
 import { MDXClient as BaseMDXClient, MDXClientProps } from 'next-mdx-remote-client/csr';
 
-import { Popup, PopupContent, PopupTrigger } from '../ui/index.js';
+import { Popup, PopupContent, PopupTrigger } from '../ui/popup.js';
 
 export function MDXClient(props: MDXClientProps) {
   const mergedComponents = {

@@ -6,7 +6,7 @@ import remarkMath from 'remark-math';
 import remarkSmartypants from 'remark-smartypants';
 
 import { rehypeSyntaxHighlighting, RehypeSyntaxHighlightingOptions } from '../plugins/index.js';
-import { Popup, PopupContent, PopupTrigger } from '../ui/index.js';
+import { Popup, PopupContent, PopupTrigger } from '../ui/popup.js';
 
 export async function MDXRemote({
   source,

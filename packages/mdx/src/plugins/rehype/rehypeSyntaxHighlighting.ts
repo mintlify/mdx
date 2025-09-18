@@ -32,6 +32,7 @@ export type RehypeSyntaxHighlightingOptions = {
   theme?: ShikiTheme;
   themes?: Record<'light' | 'dark', ShikiTheme>;
   codeStyling?: 'dark' | 'system';
+  linkMap?: Map<string, string>;
 };
 
 let highlighterPromise: Promise<Highlighter> | null = null;
@@ -50,7 +51,8 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
   options = {}
 ) => {
   return async (tree) => {
-    const asyncNodesToProcess: Promise<void>[] = [];
+    const nodesToProcess: Promise<void>[] = [];
+
     const themesToLoad: ShikiTheme[] = [];
     if (options.themes) {
       themesToLoad.push(options.themes.dark);
@@ -97,30 +99,33 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         getLanguage(child, DEFAULT_LANG_ALIASES) ??
         DEFAULT_LANG;
 
-      asyncNodesToProcess.push(
+      nodesToProcess.push(
         (async () => {
           await cdnTwoslash.prepareTypes(toString(node));
-          if (!DEFAULT_LANGS.includes(lang)) {
-            await highlighter.loadLanguage(lang);
-            traverseNode(node, index, parent, highlighter, lang, options);
-          } else {
-            traverseNode(node, index, parent, highlighter, lang, options);
-          }
+          if (!DEFAULT_LANGS.includes(lang)) await highlighter.loadLanguage(lang);
+          traverseNode({ node, index, parent, highlighter, lang, options });
         })()
       );
     });
-    await Promise.all(asyncNodesToProcess);
+    await Promise.all(nodesToProcess);
   };
 };
 
-const traverseNode = (
-  node: Element,
-  index: number,
-  parent: Element | Root | MdxJsxTextElementHast | MdxJsxFlowElementHast,
-  highlighter: Highlighter,
-  lang: ShikiLang,
-  options: RehypeSyntaxHighlightingOptions
-) => {
+function traverseNode({
+  node,
+  index,
+  parent,
+  highlighter,
+  lang,
+  options,
+}: {
+  node: Element;
+  index: number;
+  parent: Element | Root | MdxJsxTextElementHast | MdxJsxFlowElementHast;
+  highlighter: Highlighter;
+  lang: ShikiLang;
+  options: RehypeSyntaxHighlightingOptions;
+}) {
   try {
     let code = toString(node);
 
@@ -133,7 +138,7 @@ const traverseNode = (
       node.data.meta = meta.join(' ').trim() || undefined;
     }
 
-    const linkMap: Map<string, string> = new Map();
+    const linkMap = options.linkMap ?? new Map();
     const splitCode = code.split('\n');
     for (const [i, line] of splitCode.entries()) {
       const parsedLineComment = parseLineComment(line);
@@ -186,6 +191,6 @@ const traverseNode = (
     }
     throw err;
   }
-};
+}
 
 export { UNIQUE_LANGS, DEFAULT_LANG_ALIASES, SHIKI_THEMES, ShikiLang, ShikiTheme };

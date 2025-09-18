@@ -65,7 +65,7 @@ const twoslashOptions: TransformerTwoslashOptions = {
       },
       popupTypes: {
         tagName: 'div',
-        class: 'twoslash shiki prose-no-margin',
+        class: 'mint-twoslash-popover-pre',
         children: (v) => {
           if (
             v.length === 1 &&

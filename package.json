@@ -2,6 +2,7 @@
   "name": "mdx",
   "private": true,
   "scripts": {
+    "clean": "rm -rf .yarn && cd examples/app-router && rm -rf .next && cd ../pages-router && rm -rf .next",
     "build": "yarn workspaces foreach --topological-dev -Av run build"
   },
   "workspaces": [

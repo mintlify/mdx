@@ -31,7 +31,7 @@ interface PopupContextObject {
 const PopupContext = createContext<PopupContextObject | undefined>(undefined);
 
 function Popup({
-    delay = 300,
+    delay = 60000,
     children,
 }: {
     delay?: number;
@@ -115,7 +115,7 @@ const PopupContent = forwardRef<
                     side={side}
                     align={align}
                     sideOffset={sideOffset}
-                    className={className}
+                    className={'mint-twoslash-popover ' + className}
                     onPointerEnter={ctx.handleOpen}
                     onPointerLeave={ctx.handleClose}
                     onOpenAutoFocus={(e) => {

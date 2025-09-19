@@ -6,6 +6,7 @@ import remarkMath from 'remark-math';
 import remarkSmartypants from 'remark-smartypants';
 
 import { rehypeSyntaxHighlighting, RehypeSyntaxHighlightingOptions } from '../plugins/index.js';
+import { Popup, PopupContent, PopupTrigger } from '../ui/index.js';
 
 export async function MDXRemote({
   source,
@@ -22,11 +23,18 @@ export async function MDXRemote({
   parseFrontmatter?: SerializeOptions['parseFrontmatter'];
   syntaxHighlightingOptions?: RehypeSyntaxHighlightingOptions;
 }) {
+  const mergedComponents = {
+    Popup,
+    PopupContent,
+    PopupTrigger,
+    ...components,
+  };
+
   return (
     // @ts-expect-error Server Component
     <BaseMDXRemote
       source={source}
-      components={components}
+      components={mergedComponents}
       options={{
         scope,
         mdxOptions: {

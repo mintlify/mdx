@@ -36,9 +36,12 @@ export function getTwoslashOptions(
   return {
     onTwoslashError,
     onShikiError,
+    // copied fuma's approach for custom popup
+    // https://github.com/fuma-nama/fumadocs/blob/dev/packages/twoslash/src/index.ts
     renderer: rendererRich({
       hast: {
         hoverToken: {
+          tagName: 'Popup',
           children(input) {
             for (const rootElement of input) {
               if (!('children' in rootElement)) continue;
@@ -63,6 +66,45 @@ export function getTwoslashOptions(
             }
             return input;
           },
+        },
+        hoverPopup: {
+          tagName: 'PopupContent',
+        },
+        hoverCompose: ({ popup, token }) => [
+          popup,
+          {
+            type: 'element',
+            tagName: 'PopupTrigger',
+            properties: {},
+            children: [token],
+          },
+        ],
+        popupDocs: {
+          class: 'prose twoslash-popup-docs',
+        },
+        popupTypes: {
+          tagName: 'div',
+          class: 'mint-twoslash-popover-pre',
+          children: (v) => {
+            if (v.length === 1 && v[0]?.type === 'element' && v[0]?.tagName === 'pre') return v;
+
+            return [
+              {
+                type: 'element',
+                tagName: 'code',
+                properties: {
+                  class: 'twoslash-popup-code',
+                },
+                children: v,
+              },
+            ];
+          },
+        },
+        popupDocsTags: {
+          class: 'prose twoslash-popup-docs twoslash-popup-docs-tags',
+        },
+        nodesHighlight: {
+          class: 'highlighted-word twoslash-highlighted',
         },
       },
     }),

@@ -1,6 +1,6 @@
 {
   "name": "@mintlify/mdx",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Markdown parser from Mintlify",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -16,6 +16,10 @@
     "./plugins": {
       "import": "./dist/plugins/index.js",
       "types": "./dist/plugins/index.d.ts"
+    },
+    "./ui": {
+      "import": "./dist/ui/index.js",
+      "types": "./dist/ui/index.d.ts"
     }
   },
   "type": "module",
@@ -64,6 +68,7 @@
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
+    "@radix-ui/react-popover": "^1.1.15",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },

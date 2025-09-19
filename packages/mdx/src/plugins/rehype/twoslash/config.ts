@@ -86,12 +86,7 @@ export function getTwoslashOptions(
           tagName: 'div',
           class: 'mint-twoslash-popover-pre',
           children: (v) => {
-            if (
-              v.length === 1 &&
-              v[0]?.type === 'element' &&
-              v[0]?.tagName === 'pre'
-            )
-              return v;
+            if (v.length === 1 && v[0]?.type === 'element' && v[0]?.tagName === 'pre') return v;
 
             return [
               {
@@ -152,6 +147,6 @@ function checkIsExternalLink(href: string | undefined): href is Url {
   let isExternalLink = false;
   try {
     if (href && URL.canParse(href)) isExternalLink = true;
-  } catch { }
+  } catch {}
   return isExternalLink;
 }

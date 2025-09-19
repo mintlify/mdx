@@ -136,16 +136,19 @@ function traverseNode({
     }
 
     const linkMap = options.linkMap ?? new Map();
-    const splitCode = code.split('\n');
-    for (const [i, line] of splitCode.entries()) {
-      const parsedLineComment = parseLineComment(line);
-      if (!parsedLineComment) continue;
-      const { word, href } = parsedLineComment;
-      linkMap.set(word, href);
-      splitCode.splice(i, 1);
-    }
+    if (shouldUseTwoslash) {
+      const splitCode = code.split('\n');
 
-    code = splitCode.join('\n');
+      for (const [i, line] of splitCode.entries()) {
+        const parsedLineComment = parseLineComment(line);
+        if (!parsedLineComment) continue;
+        const { word, href } = parsedLineComment;
+        linkMap.set(word, href);
+        splitCode.splice(i, 1);
+      }
+
+      code = splitCode.join('\n');
+    }
 
     const twoslashOptions = getTwoslashOptions({ linkMap });
 

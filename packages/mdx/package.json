@@ -1,6 +1,6 @@
 {
   "name": "@mintlify/mdx",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "Markdown parser from Mintlify",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -83,7 +83,6 @@
     "remark-math": "^6.0.0",
     "remark-smartypants": "^3.0.2",
     "shiki": "^3.11.0",
-    "twoslash-cdn": "^0.3.4",
     "unified": "^11.0.0",
     "unist-util-visit": "^5.0.0"
   }

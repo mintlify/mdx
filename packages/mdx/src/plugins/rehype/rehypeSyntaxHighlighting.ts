@@ -20,12 +20,7 @@ import {
   DEFAULT_LANGS,
   SHIKI_TRANSFORMERS,
 } from './shiki-constants.js';
-import {
-  cdnTransformerTwoslash,
-  cdnTwoslash,
-  getTwoslashOptions,
-  parseLineComment,
-} from './twoslash/config.js';
+import { getTwoslashOptions, parseLineComment } from './twoslash/config.js';
 import { getLanguage } from './utils.js';
 
 export type RehypeSyntaxHighlightingOptions = {
@@ -99,13 +94,15 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         getLanguage(child, DEFAULT_LANG_ALIASES) ??
         DEFAULT_LANG;
 
-      nodesToProcess.push(
-        (async () => {
-          await cdnTwoslash.prepareTypes(toString(node));
-          if (!DEFAULT_LANGS.includes(lang)) await highlighter.loadLanguage(lang);
-          traverseNode({ node, index, parent, highlighter, lang, options });
-        })()
-      );
+      if (!DEFAULT_LANGS.includes(lang)) {
+        nodesToProcess.push(
+          highlighter.loadLanguage(lang).then(() => {
+            traverseNode({ node, index, parent, highlighter, lang, options });
+          })
+        );
+      } else {
+        traverseNode({ node, index, parent, highlighter, lang, options });
+      }
     });
     await Promise.all(nodesToProcess);
   };
@@ -165,11 +162,7 @@ function traverseNode({
       colorReplacements: shikiColorReplacements,
       tabindex: false,
       tokenizeMaxLineLength: 1000,
-      transformers: [
-        ...SHIKI_TRANSFORMERS,
-        transformerTwoslash(twoslashOptions),
-        cdnTransformerTwoslash(twoslashOptions),
-      ],
+      transformers: [...SHIKI_TRANSFORMERS, transformerTwoslash(twoslashOptions)],
     });
 
     const codeElement = hast.children[0] as Element;

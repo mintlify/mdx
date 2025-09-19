@@ -676,7 +676,6 @@ __metadata:
     remark-smartypants: "npm:^3.0.2"
     rimraf: "npm:^5.0.1"
     shiki: "npm:^3.11.0"
-    twoslash-cdn: "npm:^0.3.4"
     typescript: "npm:^5.7.2"
     unified: "npm:^11.0.0"
     unist-util-visit: "npm:^5.0.0"
@@ -7258,17 +7257,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"twoslash-cdn@npm:^0.3.4":
-  version: 0.3.4
-  resolution: "twoslash-cdn@npm:0.3.4"
-  dependencies:
-    twoslash: "npm:0.3.4"
-  peerDependencies:
-    typescript: ^5.5.0
-  checksum: 10c0/dc3bd3d54319f80a7c34057847522e1d5dffaec08c1d1195ea0f16aef73325576c9c3bf60eff10ce7233594c5ab980f68c3c82742d97d4c4b450ac160364a323
-  languageName: node
-  linkType: hard
-
 "twoslash-protocol@npm:0.3.4":
   version: 0.3.4
   resolution: "twoslash-protocol@npm:0.3.4"
@@ -7276,7 +7264,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"twoslash@npm:0.3.4, twoslash@npm:^0.3.4":
+"twoslash@npm:^0.3.4":
   version: 0.3.4
   resolution: "twoslash@npm:0.3.4"
   dependencies:

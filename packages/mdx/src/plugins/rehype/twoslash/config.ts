@@ -1,26 +1,11 @@
-import {
-  createTransformerFactory,
-  rendererRich,
-  type TransformerTwoslashOptions,
-} from '@shikijs/twoslash';
+import { rendererRich, type TransformerTwoslashOptions } from '@shikijs/twoslash';
 import type { ElementContent } from 'hast';
-import type { ShikiTransformer } from 'shiki/types';
-import { createTwoslashFromCDN, type TwoslashCdnReturn } from 'twoslash-cdn';
 import ts from 'typescript';
-
-type TransformerFactory = (options?: TransformerTwoslashOptions) => ShikiTransformer;
 
 const twoslashCompilerOptions: ts.CompilerOptions = {
   target: ts.ScriptTarget.ESNext,
   lib: ['ESNext', 'DOM', 'esnext', 'dom', 'es2020'],
 };
-
-export const cdnTwoslash: TwoslashCdnReturn = createTwoslashFromCDN({
-  compilerOptions: twoslashCompilerOptions,
-});
-export const cdnTransformerTwoslash: TransformerFactory = createTransformerFactory(
-  cdnTwoslash.runSync
-);
 
 function onTwoslashError(err: unknown, code: string, lang: string) {
   console.error(JSON.stringify({ err, code, lang }));

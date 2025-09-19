@@ -5,8 +5,8 @@ import {
 } from '@shikijs/twoslash';
 import type { ElementContent } from 'hast';
 import type { ShikiTransformer } from 'shiki/types';
-import { createTwoslasher, type TwoslashInstance } from 'twoslash';
-import { createTwoslashFromCDN, TwoslashCdnReturn } from 'twoslash-cdn';
+import type { TwoslashInstance } from 'twoslash';
+import { createTwoslashFromCDN } from 'twoslash-cdn';
 import * as ts from 'typescript';
 
 type TransformerFactory = (options?: TransformerTwoslashOptions) => ShikiTransformer;
@@ -26,17 +26,21 @@ const twoslashStorageMap = new Map();
 export const cdnTwoslash = createTwoslashFromCDN({
   compilerOptions: twoslashCompilerOptions,
   fsMap,
+  fetcher(input, init) {
+    console.log(`[GLOBAL__FETCHER] Fetching ${input}`);
+    return fetch(input, init);
+  },
   storage: {
     getItemRaw(key) {
+      console.log(`[GLOBAL__STORAGE] Getting ${key}`);
       return twoslashStorageMap.get(key);
     },
     setItemRaw(key, value) {
+      console.log(`[GLOBAL__STORAGE] Setting ${key}`);
       twoslashStorageMap.set(key, value);
     },
   },
 });
-
-let cachedInstance: TwoslashCdnReturn | undefined;
 
 export const cdnTwoslashTransformer: TransformerFactory = createTransformerFactory(
   cdnTwoslash.runSync
@@ -44,19 +48,24 @@ export const cdnTwoslashTransformer: TransformerFactory = createTransformerFacto
 
 export function getCdnTwoslashTransformer(options: TransformerTwoslashOptions): ShikiTransformer {
   function getInstance() {
-    cachedInstance ??= createTwoslashFromCDN({
+    return createTwoslashFromCDN({
       compilerOptions: twoslashCompilerOptions,
+      fetcher(input, init) {
+        console.log(`[FETCHER] Fetching ${input}`);
+        return fetch(input, init);
+      },
       fsMap,
       storage: {
         getItemRaw(key) {
+          console.log(`[STORAGE] Getting ${key}`);
           return twoslashStorageMap.get(key);
         },
         setItemRaw(key, value) {
+          console.log(`[STORAGE] Setting ${key}`);
           twoslashStorageMap.set(key, value);
         },
       },
     });
-    return cachedInstance;
   }
 
   return createTransformerFactory(

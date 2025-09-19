@@ -31,7 +31,7 @@ interface PopupContextObject {
 const PopupContext = createContext<PopupContextObject | undefined>(undefined);
 
 function Popup({
-    delay = 60000,
+    delay = 300,
     children,
 }: {
     delay?: number;

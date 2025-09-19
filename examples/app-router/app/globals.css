@@ -96,7 +96,7 @@
   color: var(--twoslash-docs-color);
   font-family: var(--twoslash-docs-font);
   font-size: 0.8em;
-  border-top: 1px solid var(--twoslash-border-color);
+  max-width: unset;
 }
 
 .mint-twoslash-popover .twoslash-popup-error {
@@ -112,9 +112,9 @@
   font-family: var(--twoslash-docs-font);
 }
 
-.mint-twoslash-popover .twoslash-popup-docs-tags,
 .mint-twoslash-popover .twoslash-popup-docs-tag-name {
   margin-right: 0.5em;
+  font-style: italic;
 }
 
 .mint-twoslash-popover .twoslash-popup-docs-tag-name {

@@ -65,10 +65,21 @@ function Popup({ delay = 300, children }: { delay?: number; children: ReactNode 
 
 const PopupTrigger = forwardRef<
   ComponentRef<typeof PopoverTrigger>,
-  ComponentPropsWithoutRef<typeof PopoverTrigger>
->(({ children, ...props }, ref) => {
+  ComponentPropsWithoutRef<typeof PopoverTrigger> & { href?: string; target?: string; rel?: string }
+>(({ children, href, target, rel, ...props }, ref) => {
   const ctx = useContext(PopupContext);
   if (!ctx) throw new Error('Missing Popup Context');
+
+  let element;
+  if (href) {
+    element = (
+      <a href={href} rel={rel} target={target}>
+        <span className="twoslash-hover">{children}</span>
+      </a>
+    );
+  } else {
+    element = <span className="twoslash-hover">{children}</span>;
+  }
 
   return (
     <PopoverTrigger
@@ -78,7 +89,7 @@ const PopupTrigger = forwardRef<
       asChild
       {...props}
     >
-      <span className="twoslash-hover">{children}</span>
+      {element}
     </PopoverTrigger>
   );
 });

@@ -42,19 +42,24 @@ export function getTwoslashOptions(
                 if (element.type !== 'text') continue;
                 const href = linkMap.get(element.value);
                 if (!href) continue;
-                const newElement: ElementContent = {
-                  type: 'element',
-                  tagName: 'a',
-                  properties: {
-                    href,
-                    ...(checkIsExternalLink(href) && {
-                      target: '_blank',
-                      rel: 'noopener noreferrer',
-                    }),
-                  },
-                  children: [{ type: 'text', value: element.value }],
+                const linkProperties = {
+                  href,
+                  ...(checkIsExternalLink(href) && {
+                    target: '_blank',
+                    rel: 'noopener noreferrer',
+                  }),
                 };
-                input.splice(i, 1, newElement);
+                if (rootElement.type === 'element' && rootElement.tagName === 'PopupTrigger') {
+                  rootElement.properties = { ...rootElement.properties, ...linkProperties };
+                } else {
+                  const newElement: ElementContent = {
+                    type: 'element',
+                    tagName: 'a',
+                    properties: linkProperties,
+                    children: [{ type: 'text', value: element.value }],
+                  };
+                  input.splice(i, 1, newElement);
+                }
               }
             }
             return input;
@@ -73,10 +78,10 @@ export function getTwoslashOptions(
           },
         ],
         popupDocs: {
-          class: 'prose twoslash-popup-docs',
+          class: 'prose-sm prose-gray dark:prose-dark twoslash-popup-docs',
         },
         popupTypes: {
-          tagName: 'div',
+          tagName: 'span',
           class: 'mint-twoslash-popover-pre',
           children: (v) => {
             if (v.length === 1 && v[0]?.type === 'element' && v[0]?.tagName === 'pre') return v;
@@ -86,7 +91,7 @@ export function getTwoslashOptions(
                 type: 'element',
                 tagName: 'code',
                 properties: {
-                  class: 'twoslash-popup-code',
+                  class: 'twoslash-popup-code shiki',
                 },
                 children: v,
               },
@@ -94,7 +99,7 @@ export function getTwoslashOptions(
           },
         },
         popupDocsTags: {
-          class: 'prose twoslash-popup-docs twoslash-popup-docs-tags',
+          class: 'prose-sm prose-gray dark:prose-dark twoslash-popup-docs twoslash-popup-docs-tags',
         },
         nodesHighlight: {
           class: 'highlighted-word twoslash-highlighted',

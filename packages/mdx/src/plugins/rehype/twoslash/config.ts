@@ -1,5 +1,10 @@
 import { rendererRich, type TransformerTwoslashOptions } from '@shikijs/twoslash';
-import type { ElementContent } from 'hast';
+import type { Element, ElementContent } from 'hast';
+import type { Code } from 'mdast';
+import { fromMarkdown } from 'mdast-util-from-markdown';
+import { gfmFromMarkdown } from 'mdast-util-gfm';
+import { defaultHandlers, toHast } from 'mdast-util-to-hast';
+import type { ShikiTransformerContextCommon } from 'shiki/types';
 import ts from 'typescript';
 
 const twoslashCompilerOptions: ts.CompilerOptions = {
@@ -24,6 +29,9 @@ export function getTwoslashOptions(
     // copied fuma's approach for custom popup
     // https://github.com/fuma-nama/fumadocs/blob/dev/packages/twoslash/src/index.ts
     renderer: rendererRich({
+      renderMarkdown,
+      renderMarkdownInline,
+      queryRendering: 'line',
       hast: {
         hoverToken: {
           tagName: 'Popup',
@@ -101,9 +109,54 @@ export function getTwoslashOptions(
   };
 }
 
+/** https://github.com/fuma-nama/fumadocs/blob/2862a10c2d78b52c0a3f479ad21b255cc0031fc9/packages/twoslash/src/index.ts#L121-L150 */
+function renderMarkdown(this: ShikiTransformerContextCommon, md: string): ElementContent[] {
+  const mdast = fromMarkdown(
+    md.replace(/{@link (?<link>[^}]*)}/g, '$1'), // replace jsdoc links
+    { mdastExtensions: [gfmFromMarkdown()] }
+  );
+
+  return (
+    toHast(mdast, {
+      handlers: {
+        code: (state, node: Code) => {
+          if (node.lang) {
+            return this.codeToHast(node.value, {
+              ...this.options,
+              transformers: [],
+              meta: {
+                __raw: node.meta ?? undefined,
+              },
+              lang: node.lang,
+            }).children[0] as Element;
+          }
+          return defaultHandlers.code(state, node);
+        },
+      },
+    }) as Element
+  ).children;
+}
+
+/** https://github.com/fuma-nama/fumadocs/blob/2862a10c2d78b52c0a3f479ad21b255cc0031fc9/packages/twoslash/src/index.ts#L152-L168 */
+function renderMarkdownInline(
+  this: ShikiTransformerContextCommon,
+  md: string,
+  context?: string
+): ElementContent[] {
+  const text = context === 'tag:param' ? md.replace(/^(?<link>[\w$-]+)/, '`$1` ') : md;
+
+  const children = renderMarkdown.call(this, text);
+  if (children.length === 1 && children[0]?.type === 'element' && children[0].tagName === 'p')
+    return children[0].children;
+  return children;
+}
+
 export function parseLineComment(line: string): { word: string; href: string } | undefined {
   line = line.trim();
-  if (!line.startsWith('//') || (!line.includes('@link ') && !line.includes('@link:'))) return;
+  if (!line.startsWith('//')) return;
+
+  line = line.replace(/^[\/\s]+/, '').trim();
+  if (!line.startsWith('@link ') && !line.startsWith('@link:')) return;
 
   line = line.replace('@link:', '@link ');
   const parts = line.split('@link ')[1];

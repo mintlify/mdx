@@ -702,7 +702,10 @@ __metadata:
     eslint-config-prettier: "npm:8.x"
     eslint-plugin-unused-imports: "npm:^3.x"
     hast-util-to-string: "npm:^3.0.1"
+    mdast-util-from-markdown: "npm:^2.0.2"
+    mdast-util-gfm: "npm:^3.1.0"
     mdast-util-mdx-jsx: "npm:^3.2.0"
+    mdast-util-to-hast: "npm:^13.2.0"
     next-mdx-remote-client: "npm:^1.0.3"
     prettier: "npm:^3.1.1"
     prettier-plugin-tailwindcss: "npm:^0.6.8"
@@ -4850,7 +4853,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdast-util-from-markdown@npm:^2.0.0":
+"mdast-util-from-markdown@npm:^2.0.0, mdast-util-from-markdown@npm:^2.0.2":
   version: 2.0.2
   resolution: "mdast-util-from-markdown@npm:2.0.2"
   dependencies:
@@ -4944,6 +4947,21 @@ __metadata:
     mdast-util-gfm-task-list-item: "npm:^2.0.0"
     mdast-util-to-markdown: "npm:^2.0.0"
   checksum: 10c0/91596fe9bf3e4a0c546d0c57f88106c17956d9afbe88ceb08308e4da2388aff64489d649ddad599caecfdf755fc3ae4c9b82c219b85281bc0586b67599881fca
+  languageName: node
+  linkType: hard
+
+"mdast-util-gfm@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "mdast-util-gfm@npm:3.1.0"
+  dependencies:
+    mdast-util-from-markdown: "npm:^2.0.0"
+    mdast-util-gfm-autolink-literal: "npm:^2.0.0"
+    mdast-util-gfm-footnote: "npm:^2.0.0"
+    mdast-util-gfm-strikethrough: "npm:^2.0.0"
+    mdast-util-gfm-table: "npm:^2.0.0"
+    mdast-util-gfm-task-list-item: "npm:^2.0.0"
+    mdast-util-to-markdown: "npm:^2.0.0"
+  checksum: 10c0/4bedcfb6a20e39901c8772f0d2bb2d7a64ae87a54c13cbd92eec062cf470fbb68c2ad754e149af5b30794e2de61c978ab1de1ace03c0c40f443ca9b9b8044f81
   languageName: node
   linkType: hard
 
@@ -5053,7 +5071,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdast-util-to-hast@npm:^13.0.0":
+"mdast-util-to-hast@npm:^13.0.0, mdast-util-to-hast@npm:^13.2.0":
   version: 13.2.0
   resolution: "mdast-util-to-hast@npm:13.2.0"
   dependencies:

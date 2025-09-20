@@ -60,10 +60,6 @@
 
 
 /* ===== Popup Override ===== */
-.twoslash .twoslash-popup-container {
-  display: none;
-}
-
 .mint-twoslash-popover {
   background: var(--twoslash-popup-bg);
   color: var(--twoslash-popup-color);

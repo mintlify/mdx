@@ -1,4 +1,6 @@
-import { MDXClient, serialize, SerializeResult } from '@mintlify/mdx';
+import { MDXClient } from '@mintlify/mdx/client';
+import { serialize } from '@mintlify/mdx/server';
+import type { SerializeResult } from '@mintlify/mdx/types';
 import { promises as fs } from 'fs';
 import type { GetStaticProps, InferGetStaticPropsType } from 'next';
 

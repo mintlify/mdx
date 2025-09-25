@@ -80,10 +80,7 @@ export const DEFAULT_THEMES: [ShikiTheme, ShikiTheme, ThemeRegistration] = [
 export const shikiColorReplacements: Partial<Record<ShikiTheme, string | Record<string, string>>> =
   {
     'dark-plus': {
-      '#1e1e1e': '#0B0C0E',
-      '#569cd6': '#9cdcfe',
-      '#c8c8c8': '#f3f7f6',
-      '#d4d4d4': '#f3f7f6',
+      '#1e1e1e': '#0B0C0E'
     },
   };
 

@@ -80,11 +80,7 @@ export const DEFAULT_THEMES: [ShikiTheme, ShikiTheme, ThemeRegistration] = [
 export const shikiColorReplacements: Partial<Record<ShikiTheme, string | Record<string, string>>> =
   {
     'dark-plus': {
-      '#1e1e1e': 'transparent',
-    },
-    'github-light-default': {
-      '#fff': 'transparent',
-      '#ffffff': 'transparent',
+      '#1e1e1e': '#0B0C0E'
     },
   };
 

@@ -127,7 +127,7 @@ function traverseNode({
     let code = toString(node);
 
     const meta = node.data?.meta?.split(' ') ?? [];
-    const twoslashIndex = meta.findIndex((str) => str.toLowerCase() === 'mint-twoslash');
+    const twoslashIndex = meta.findIndex((str) => str.toLowerCase() === 'twoslash');
     const shouldUseTwoslash = twoslashIndex > -1;
 
     if (node.data && node.data.meta && shouldUseTwoslash) {
@@ -154,7 +154,7 @@ function traverseNode({
 
     const hast = highlighter.codeToHast(code, {
       lang: lang ?? DEFAULT_LANG,
-      meta: shouldUseTwoslash ? { __raw: 'mint-twoslash' } : undefined,
+      meta: shouldUseTwoslash ? { __raw: 'twoslash' } : undefined,
       themes: {
         light:
           options.themes?.light ??

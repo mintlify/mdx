@@ -107,7 +107,7 @@ export function getTwoslashOptions(
       },
     }),
     langs: ['ts', 'typescript', 'js', 'javascript', 'tsx', 'jsx'],
-    explicitTrigger: /mint-twoslash/,
+    explicitTrigger: true,
     twoslashOptions: {
       compilerOptions: twoslashCompilerOptions,
     },

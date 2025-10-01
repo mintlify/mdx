@@ -1,4 +1,4 @@
-import { MDXRemote } from '@mintlify/mdx';
+import { MDXRemote } from '@mintlify/mdx/rsc';
 import { promises as fs } from 'fs';
 
 export default async function Home() {

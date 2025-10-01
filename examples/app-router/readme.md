@@ -13,7 +13,7 @@ You can check out the demo of [this page](https://github.com/mintlify/mdx/blob/m
 1. Use the `MDXRemote` component directly inside your async React Server Component.
 
    ```tsx
-   import { MDXRemote } from '@mintlify/mdx';
+   import { MDXRemote } from '@mintlify/mdx/rsc';
 
    export default async function Home() {
      const source: `---

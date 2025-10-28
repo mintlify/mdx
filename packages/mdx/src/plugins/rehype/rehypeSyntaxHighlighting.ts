@@ -11,8 +11,6 @@ import {
   type ShikiTheme,
   shikiColorReplacements,
   DEFAULT_LANG_ALIASES,
-  SHIKI_THEMES,
-  UNIQUE_LANGS,
   DEFAULT_LANG,
   DEFAULT_DARK_THEME,
   DEFAULT_LIGHT_THEME,
@@ -188,5 +186,3 @@ function traverseNode({
     throw err;
   }
 }
-
-export { UNIQUE_LANGS, DEFAULT_LANG_ALIASES, SHIKI_THEMES, ShikiLang, ShikiTheme };

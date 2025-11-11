@@ -1,6 +1,6 @@
 {
   "name": "@mintlify/mdx",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Markdown parser from Mintlify",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -95,6 +95,7 @@
   "dependencies": {
     "@shikijs/transformers": "^3.11.0",
     "@shikijs/twoslash": "^3.12.2",
+    "arktype": "^2.1.26",
     "hast-util-to-string": "^3.0.1",
     "mdast-util-from-markdown": "^2.0.2",
     "mdast-util-gfm": "^3.1.0",

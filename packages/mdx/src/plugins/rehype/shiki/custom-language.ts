@@ -1,5 +1,6 @@
 import { scope } from 'arktype';
 
+// Types come from the LanguageRegistration type in Shiki: node_modules/@shikijs/types/dist/index.d.ts
 const types = scope({
   ScopeName: 'string',
   ScopePath: 'string',

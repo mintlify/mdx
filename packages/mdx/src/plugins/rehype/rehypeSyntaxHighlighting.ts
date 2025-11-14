@@ -1,4 +1,5 @@
 import { transformerTwoslash } from '@shikijs/twoslash';
+import { type } from 'arktype';
 import type { Element, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from 'mdast-util-mdx-jsx';
@@ -18,6 +19,7 @@ import {
   DEFAULT_LANGS,
   SHIKI_TRANSFORMERS,
 } from './shiki-constants.js';
+import { TextMateGrammar, TextMateGrammarType } from './shiki/custom-language.js';
 import { getTwoslashOptions, parseLineComment } from './twoslash/config.js';
 import { getLanguage } from './utils.js';
 
@@ -26,6 +28,7 @@ export type RehypeSyntaxHighlightingOptions = {
   themes?: Record<'light' | 'dark', ShikiTheme>;
   codeStyling?: 'dark' | 'system';
   linkMap?: Map<string, string>;
+  customLanguages?: string[];
 };
 
 let highlighterPromise: Promise<Highlighter> | null = null;
@@ -55,14 +58,24 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
     }
 
     const highlighter = await getHighlighter();
-    await Promise.all(
-      themesToLoad
+
+    await Promise.all([
+      ...themesToLoad
         .filter(
           (theme): theme is Exclude<ShikiTheme, 'css-variables'> =>
             !DEFAULT_THEMES.includes(theme) && theme !== 'css-variables'
         )
-        .map(async (theme) => await highlighter.loadTheme(theme))
-    );
+        .map((theme) => highlighter.loadTheme(theme)),
+      ...(options.customLanguages?.map((unparsedLang) => {
+        const parsedLang = JSON.parse(unparsedLang);
+        const lang = TextMateGrammar(parsedLang);
+        if (lang instanceof type.errors) {
+          console.error(lang.summary);
+          return;
+        }
+        return highlighter.loadLanguage(lang);
+      }) ?? []),
+    ]);
 
     visit(tree, 'element', (node, index, parent) => {
       const child = node.children[0];
@@ -186,3 +199,5 @@ function traverseNode({
     throw err;
   }
 }
+
+export { TextMateGrammar, type TextMateGrammarType };

@@ -13,7 +13,7 @@ export const LINE_FOCUS_CLASS_NAME = 'line-focus';
 export const LINE_DIFF_ADD_CLASS_NAME = 'line-diff line-add';
 export const LINE_DIFF_REMOVE_CLASS_NAME = 'line-diff line-remove';
 
-export type ShikiLang = BundledLanguage | 'text';
+export type ShikiLang = BundledLanguage | 'ansi' | 'text';
 export type ShikiTheme = (typeof SHIKI_THEMES)[number];
 
 export const SHIKI_CSS_THEME = createCssVariablesTheme({
@@ -80,11 +80,12 @@ export const DEFAULT_THEMES: [ShikiTheme, ShikiTheme, ThemeRegistration] = [
 export const shikiColorReplacements: Partial<Record<ShikiTheme, string | Record<string, string>>> =
   {
     'dark-plus': {
-      '#1e1e1e': '#0B0C0E'
+      '#1e1e1e': '#0B0C0E',
     },
   };
 
 export const DEFAULT_LANG_ALIASES: Record<string, ShikiLang> = {
+  ansi: 'ansi',
   abap: 'abap',
   'actionscript-3': 'actionscript-3',
   ada: 'ada',

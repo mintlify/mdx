@@ -19,6 +19,29 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@ark/schema@npm:0.54.0":
+  version: 0.54.0
+  resolution: "@ark/schema@npm:0.54.0"
+  dependencies:
+    "@ark/util": "npm:0.54.0"
+  checksum: 10c0/84e1068c969128cf5c56dc778b2b25cdc47e0fd35c55cef727956f6be01ec2d4f3c80ebf4a8700143657a5b5c086b914020a2b3db1af67cc0b6e7b3212fff62d
+  languageName: node
+  linkType: hard
+
+"@ark/util@npm:0.53.0":
+  version: 0.53.0
+  resolution: "@ark/util@npm:0.53.0"
+  checksum: 10c0/a3fb8f3c7ad0815de3e0eb33463944f21c666a6d646eac4c1897eeb55e160f0ded3c54dafe02a9209298e93a2869368118aff31028dcf4ee87a254b99496959f
+  languageName: node
+  linkType: hard
+
+"@ark/util@npm:0.54.0":
+  version: 0.54.0
+  resolution: "@ark/util@npm:0.54.0"
+  checksum: 10c0/9f0e3204e2f7bd0b491b6f2d4af95784520be3f32a29890c9569831b72d6f77bc25944386aca2fe9abe7c327b58e7b6a7842fb46c621aed1c03427e4f88991e5
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.22.13, @babel/code-frame@npm:^7.25.9":
   version: 7.25.9
   resolution: "@babel/code-frame@npm:7.25.9"
@@ -698,6 +721,7 @@ __metadata:
     "@types/unist": "npm:^3.0.3"
     "@typescript-eslint/eslint-plugin": "npm:6.x"
     "@typescript-eslint/parser": "npm:6.x"
+    arktype: "npm:^2.1.26"
     eslint: "npm:8.x"
     eslint-config-prettier: "npm:8.x"
     eslint-plugin-unused-imports: "npm:^3.x"
@@ -2052,6 +2076,26 @@ __metadata:
   version: 5.3.2
   resolution: "aria-query@npm:5.3.2"
   checksum: 10c0/003c7e3e2cff5540bf7a7893775fc614de82b0c5dde8ae823d47b7a28a9d4da1f7ed85f340bdb93d5649caa927755f0e31ecc7ab63edfdfc00c8ef07e505e03e
+  languageName: node
+  linkType: hard
+
+"arkregex@npm:0.0.2":
+  version: 0.0.2
+  resolution: "arkregex@npm:0.0.2"
+  dependencies:
+    "@ark/util": "npm:0.53.0"
+  checksum: 10c0/e3f4572058b3136b5d882b38105a50f726f22ea06222d1e3fd46f6d82954f7c7a2b24e516359a2d3b6970f91b78096bf33d1999bf507fd55a1aaea491961e435
+  languageName: node
+  linkType: hard
+
+"arktype@npm:^2.1.26":
+  version: 2.1.26
+  resolution: "arktype@npm:2.1.26"
+  dependencies:
+    "@ark/schema": "npm:0.54.0"
+    "@ark/util": "npm:0.54.0"
+    arkregex: "npm:0.0.2"
+  checksum: 10c0/58ac38f9ba21773c8eadb0411b1cb0cd4404face046e265c05361c52bfb9abeb4ea59c0b2802124dff524631f29da06a3d8b0fba30289b1fbec7c6d6cddb56fa
   languageName: node
   linkType: hard
 

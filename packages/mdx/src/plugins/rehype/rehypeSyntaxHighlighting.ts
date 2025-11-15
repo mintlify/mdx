@@ -18,6 +18,7 @@ import {
   DEFAULT_THEMES,
   DEFAULT_LANGS,
   SHIKI_TRANSFORMERS,
+  UNIQUE_LANGS,
 } from './shiki-constants.js';
 import { TextMateGrammar, TextMateGrammarType } from './shiki/custom-language.js';
 import { getTwoslashOptions, parseLineComment } from './twoslash/config.js';
@@ -26,7 +27,7 @@ import { getLanguage } from './utils.js';
 export type RehypeSyntaxHighlightingOptions = {
   theme?: ShikiTheme;
   themes?: Record<'light' | 'dark', ShikiTheme>;
-  codeStyling?: 'dark' | 'system';
+  codeStyling?: 'dark' | 'system' | 'light' | Record<string, unknown> | null;
   linkMap?: Map<string, string>;
   customLanguages?: string[];
 };
@@ -48,6 +49,7 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
 ) => {
   return async (tree) => {
     const nodesToProcess: Promise<void>[] = [];
+    const customLanguageNames: string[] = [];
 
     const themesToLoad: ShikiTheme[] = [];
     if (options.themes) {
@@ -66,14 +68,16 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
             !DEFAULT_THEMES.includes(theme) && theme !== 'css-variables'
         )
         .map((theme) => highlighter.loadTheme(theme)),
-      ...(options.customLanguages?.map((unparsedLang) => {
+      ...(options.customLanguages?.map(async (unparsedLang) => {
         const parsedLang = JSON.parse(unparsedLang);
         const lang = TextMateGrammar(parsedLang);
         if (lang instanceof type.errors) {
           console.error(lang.summary);
           return;
         }
-        return highlighter.loadLanguage(lang);
+        await highlighter.loadLanguage(lang);
+        const possibleNames = [lang.name, lang.displayName, ...(lang.aliases ?? [])];
+        customLanguageNames.push(...possibleNames.filter((l) => l != undefined));
       }) ?? []),
     ]);
 
@@ -105,13 +109,20 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         getLanguage(child, DEFAULT_LANG_ALIASES) ??
         DEFAULT_LANG;
 
-      if (!DEFAULT_LANGS.includes(lang)) {
+      if (
+        !DEFAULT_LANGS.includes(lang) &&
+        !customLanguageNames.includes(lang) &&
+        UNIQUE_LANGS.includes(lang)
+      ) {
         nodesToProcess.push(
           highlighter.loadLanguage(lang).then(() => {
             traverseNode({ node, index, parent, highlighter, lang, options });
           })
         );
       } else {
+        if (!UNIQUE_LANGS.includes(lang) && !customLanguageNames.includes(lang)) {
+          lang = DEFAULT_LANG;
+        }
         traverseNode({ node, index, parent, highlighter, lang, options });
       }
     });

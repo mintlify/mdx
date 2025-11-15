@@ -17,7 +17,7 @@ export function getLanguage(
   for (const classListItem of className) {
     if (classListItem.startsWith('language-')) {
       const lang = classListItem.slice(9).toLowerCase();
-      if (lang) return aliases[lang];
+      if (lang) return aliases[lang] ?? (lang as ShikiLang);
     }
   }
 

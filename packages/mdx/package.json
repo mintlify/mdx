@@ -1,6 +1,6 @@
 {
   "name": "@mintlify/mdx",
-  "version": "3.0.4",
+  "version": "4.0.0",
   "description": "Markdown parser from Mintlify",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -72,8 +72,8 @@
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/recommended": "1.x",
     "@types/hast": "^3.0.4",
-    "@types/react": "^18.3.11",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "^19.2.1",
+    "@types/react-dom": "^19.2.1",
     "@types/unist": "^3.0.3",
     "@typescript-eslint/eslint-plugin": "6.x",
     "@typescript-eslint/parser": "6.x",
@@ -82,15 +82,15 @@
     "eslint-plugin-unused-imports": "^3.x",
     "prettier": "^3.1.1",
     "prettier-plugin-tailwindcss": "^0.6.8",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
     "rimraf": "^5.0.1",
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
-    "@radix-ui/react-popover": "^1.1.15",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "@radix-ui/react-popover": "^19.2.1",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1"
   },
   "dependencies": {
     "@shikijs/transformers": "^3.11.0",

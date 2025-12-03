@@ -31,7 +31,6 @@ export async function MDXRemote({
   };
 
   return (
-    // @ts-expect-error Server Component
     <BaseMDXRemote
       source={source}
       components={mergedComponents}

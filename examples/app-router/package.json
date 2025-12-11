@@ -11,7 +11,7 @@
   "dependencies": {
     "@mintlify/mdx": "workspace:^",
     "@radix-ui/react-popover": "^1.1.15",
-    "next": "16.0.7",
+    "next": "16.0.9",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
   },

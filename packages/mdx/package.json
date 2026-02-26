@@ -103,6 +103,7 @@
     "mdast-util-to-hast": "^13.2.0",
     "next-mdx-remote-client": "^1.0.3",
     "rehype-katex": "^7.0.1",
+    "remark-custom-header-id": "^1.0.0",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "remark-smartypants": "^3.0.2",

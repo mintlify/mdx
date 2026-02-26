@@ -1,5 +1,6 @@
 import { serialize as baseSerialize } from 'next-mdx-remote-client/serialize';
 import rehypeKatex from 'rehype-katex';
+import remarkCustomHeaderId from 'remark-custom-header-id';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkSmartypants from 'remark-smartypants';
@@ -30,6 +31,7 @@ export const serialize = async ({
             remarkGfm,
             remarkSmartypants,
             remarkMath,
+            remarkCustomHeaderId,
             ...(mdxOptions?.remarkPlugins || []),
           ],
           rehypePlugins: [

@@ -1,6 +1,7 @@
 import { MDXRemote as BaseMDXRemote, MDXComponents } from 'next-mdx-remote-client/rsc';
 import { SerializeOptions } from 'next-mdx-remote-client/serialize';
 import rehypeKatex from 'rehype-katex';
+import remarkCustomHeaderId from 'remark-custom-header-id';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkSmartypants from 'remark-smartypants';
@@ -41,6 +42,7 @@ export async function MDXRemote({
             remarkGfm,
             remarkSmartypants,
             remarkMath,
+            remarkCustomHeaderId,
             ...(mdxOptions?.remarkPlugins || []),
           ],
           rehypePlugins: [

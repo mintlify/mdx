@@ -1079,6 +1079,7 @@ __metadata:
     react: "npm:^19.2.1"
     react-dom: "npm:^19.2.1"
     rehype-katex: "npm:^7.0.1"
+    remark-custom-header-id: "npm:^1.0.0"
     remark-gfm: "npm:^4.0.0"
     remark-math: "npm:^6.0.0"
     remark-smartypants: "npm:^3.0.2"
@@ -1931,7 +1932,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/unist@npm:*, @types/unist@npm:^3.0.3":
+"@types/unist@npm:*, @types/unist@npm:^3.0.2, @types/unist@npm:^3.0.3":
   version: 3.0.3
   resolution: "@types/unist@npm:3.0.3"
   checksum: 10c0/2b1e4adcab78388e088fcc3c0ae8700f76619dbcb4741d7d201f87e2cb346bfc29a89003cfea2d76c996e1061452e14fcd737e8b25aacf949c1f2d6b2bc3dd60
@@ -7671,6 +7672,16 @@ __metadata:
     "@types/hast": "npm:^3.0.0"
     hast-util-to-estree: "npm:^3.0.0"
   checksum: 10c0/be60d7433a7f788a14f41da3e93ba9d9272c908ddef47757026cc4bbcc912f6301d56810349adf876d294a8d048626a0dbf6988aaa574afbfc29eac1ddc1eb74
+  languageName: node
+  linkType: hard
+
+"remark-custom-header-id@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "remark-custom-header-id@npm:1.0.0"
+  dependencies:
+    "@types/unist": "npm:^3.0.2"
+    unist-util-visit: "npm:^5.0.0"
+  checksum: 10c0/a8492d5921325ded03dfdccd55e0c4298390f13fcfa00545b7f5c4598bce48e093fe24a8b8c20c6ff92881bcd844de82039086583b4859bcecb84b949ff0a8f8
   languageName: node
   linkType: hard
 

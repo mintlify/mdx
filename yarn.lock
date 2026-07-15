@@ -1084,6 +1084,7 @@ __metadata:
     remark-smartypants: "npm:^3.0.2"
     rimraf: "npm:^5.0.1"
     shiki: "npm:^3.11.0"
+    twoslash: "npm:^0.3.4"
     typescript: "npm:^5.7.2"
     unified: "npm:^11.0.0"
     unist-util-visit: "npm:^5.0.0"

@@ -5,12 +5,28 @@ import { fromMarkdown } from 'mdast-util-from-markdown';
 import { gfmFromMarkdown } from 'mdast-util-gfm';
 import { defaultHandlers, toHast } from 'mdast-util-to-hast';
 import type { ShikiTransformerContextCommon } from 'shiki/types';
+import { createTwoslasher } from 'twoslash';
 import ts from 'typescript';
+
+import { createFileSystemTypesCache } from './cache-fs.js';
 
 const twoslashCompilerOptions: ts.CompilerOptions = {
   target: ts.ScriptTarget.ESNext,
   lib: ['ESNext', 'DOM', 'esnext', 'dom', 'es2020'],
 };
+
+let sharedTwoslasher: ReturnType<typeof createTwoslasher> | undefined;
+
+function getSharedTwoslasher(): ReturnType<typeof createTwoslasher> {
+  if (!sharedTwoslasher) {
+    sharedTwoslasher = createTwoslasher({
+      compilerOptions: { moduleResolution: ts.ModuleResolutionKind.Bundler },
+    });
+  }
+  return sharedTwoslasher;
+}
+
+const sharedTypesCache = createFileSystemTypesCache({ salt: ts.version });
 
 function onTwoslashError(err: unknown, code: string, lang: string) {
   console.error(JSON.stringify({ err, code, lang }));
@@ -108,6 +124,8 @@ export function getTwoslashOptions(
     }),
     langs: ['ts', 'typescript', 'js', 'javascript', 'tsx', 'jsx'],
     explicitTrigger: true,
+    twoslasher: getSharedTwoslasher(),
+    typesCache: sharedTypesCache,
     twoslashOptions: {
       compilerOptions: twoslashCompilerOptions,
     },

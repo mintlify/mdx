@@ -65,6 +65,7 @@
   "author": "Mintlify, Inc.",
   "license": "MIT",
   "devDependencies": {
+    "@base-ui/react": "^1.6.0",
     "@mintlify/eslint-config": "^1.0.4",
     "@mintlify/eslint-config-typescript": "^1.0.9",
     "@mintlify/prettier-config": "^1.0.1",
@@ -88,13 +89,13 @@
     "typescript": "^5.7.2"
   },
   "peerDependencies": {
-    "@radix-ui/react-popover": "^19.2.1",
+    "@base-ui/react": "^1.6.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
   },
   "dependencies": {
-    "@shikijs/transformers": "^3.11.0",
-    "@shikijs/twoslash": "^3.12.2",
+    "@shikijs/transformers": "^3.23.0",
+    "@shikijs/twoslash": "^3.23.0",
     "arktype": "^2.1.26",
     "hast-util-to-string": "^3.0.1",
     "mdast-util-from-markdown": "^2.0.2",
@@ -106,7 +107,7 @@
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",
     "remark-smartypants": "^3.0.2",
-    "shiki": "^3.11.0",
+    "shiki": "^3.23.0",
     "twoslash": "^0.3.4",
     "unified": "^11.0.0",
     "unist-util-visit": "^5.0.0"

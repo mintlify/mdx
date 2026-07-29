@@ -2,129 +2,89 @@
 
 // copied from fuma's approach for custom popup
 // https://github.com/fuma-nama/fumadocs/blob/dev/packages/twoslash/src/ui/popup.tsx
-import { Popover, PopoverContent, PopoverPortal, PopoverTrigger } from '@radix-ui/react-popover';
+import { Popover } from '@base-ui/react/popover';
 import {
   type ComponentPropsWithoutRef,
-  type ComponentRef,
   createContext,
-  forwardRef,
   type ReactNode,
+  type Ref,
   useContext,
   useMemo,
-  useRef,
-  useState,
 } from 'react';
 
-interface PopupContextObject {
-  open: boolean;
-  setOpen: (open: boolean) => void;
-
-  handleOpen: (e: React.PointerEvent) => void;
-  handleClose: (e: React.PointerEvent) => void;
-}
-
-const PopupContext = createContext<PopupContextObject | undefined>(undefined);
+const PopupContext = createContext<{ delay: number } | undefined>(undefined);
 
 function Popup({ delay = 300, children }: { delay?: number; children: ReactNode }) {
-  const [open, setOpen] = useState(false);
-  const openTimeoutRef = useRef<number | undefined>(undefined);
-  const closeTimeoutRef = useRef<number | undefined>(undefined);
-
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopupContext.Provider
-        value={useMemo(
-          () => ({
-            open,
-            setOpen,
-            handleOpen(e) {
-              if (e.pointerType === 'touch') return;
-              if (closeTimeoutRef.current) clearTimeout(closeTimeoutRef.current);
-
-              openTimeoutRef.current = window.setTimeout(() => {
-                setOpen(true);
-              }, delay);
-            },
-            handleClose(e) {
-              if (e.pointerType === 'touch') return;
-              if (openTimeoutRef.current) clearTimeout(openTimeoutRef.current);
-
-              closeTimeoutRef.current = window.setTimeout(() => {
-                setOpen(false);
-              }, delay);
-            },
-          }),
-          [delay, open]
-        )}
-      >
+    <Popover.Root>
+      <PopupContext.Provider value={useMemo(() => ({ delay }), [delay])}>
         {children}
       </PopupContext.Provider>
-    </Popover>
+    </Popover.Root>
   );
 }
 
-const PopupTrigger = forwardRef<
-  ComponentRef<typeof PopoverTrigger>,
-  ComponentPropsWithoutRef<typeof PopoverTrigger> & { href?: string; target?: string; rel?: string }
->(({ children, href, target, rel, ...props }, ref) => {
+const PopupTrigger = ({
+  children,
+  href,
+  target,
+  rel,
+  ...props
+}: ComponentPropsWithoutRef<typeof Popover.Trigger> & {
+  href?: string;
+  target?: string;
+  rel?: string;
+}) => {
   const ctx = useContext(PopupContext);
   if (!ctx) throw new Error('Missing Popup Context');
 
-  let element;
-  if (href) {
-    element = (
-      <a href={href} rel={rel} target={target}>
-        <span className="twoslash-hover">{children}</span>
-      </a>
-    );
-  } else {
-    element = <span className="twoslash-hover">{children}</span>;
-  }
+  const element = href ? (
+    <a href={href} rel={rel} target={target}>
+      <span className="twoslash-hover">{children}</span>
+    </a>
+  ) : (
+    <span className="twoslash-hover">{children}</span>
+  );
 
   return (
-    <PopoverTrigger
-      ref={ref}
-      onPointerEnter={ctx.handleOpen}
-      onPointerLeave={ctx.handleClose}
-      asChild
+    <Popover.Trigger
+      openOnHover
+      delay={ctx.delay}
+      closeDelay={ctx.delay}
+      nativeButton={false}
+      render={element}
       {...props}
-    >
-      {element}
-    </PopoverTrigger>
+    />
   );
-});
+};
 
-PopupTrigger.displayName = 'PopupTrigger';
-
-const PopupContent = forwardRef<
-  ComponentRef<typeof PopoverContent>,
-  ComponentPropsWithoutRef<typeof PopoverContent>
->(({ className, side = 'bottom', align = 'center', sideOffset = 4, ...props }, ref) => {
+const PopupContent = ({
+  className,
+  side = 'bottom',
+  align = 'center',
+  sideOffset = 4,
+  ref,
+  ...props
+}: ComponentPropsWithoutRef<typeof Popover.Popup> &
+  Pick<ComponentPropsWithoutRef<typeof Popover.Positioner>, 'side' | 'align' | 'sideOffset'> & {
+    ref?: Ref<HTMLDivElement>;
+  }) => {
   const ctx = useContext(PopupContext);
   if (!ctx) throw new Error('Missing Popup Context');
 
   return (
-    <PopoverPortal>
-      <PopoverContent
-        ref={ref}
-        side={side}
-        align={align}
-        sideOffset={sideOffset}
-        className={'mint-twoslash-popover ' + className}
-        onPointerEnter={ctx.handleOpen}
-        onPointerLeave={ctx.handleClose}
-        onOpenAutoFocus={(e) => {
-          e.preventDefault();
-        }}
-        onCloseAutoFocus={(e) => {
-          e.preventDefault();
-        }}
-        {...props}
-      />
-    </PopoverPortal>
+    <Popover.Portal>
+      <Popover.Positioner side={side} align={align} sideOffset={sideOffset}>
+        <Popover.Popup
+          ref={ref}
+          className={['mint-twoslash-popover', className].filter(Boolean).join(' ')}
+          initialFocus={false}
+          finalFocus={false}
+          {...props}
+        />
+      </Popover.Positioner>
+    </Popover.Portal>
   );
-});
-
-PopupContent.displayName = 'PopupContent';
+};
 
 export { Popup, PopupTrigger, PopupContent };

@@ -102,7 +102,7 @@
     "mdast-util-gfm": "^3.1.0",
     "mdast-util-mdx-jsx": "^3.2.0",
     "mdast-util-to-hast": "^13.2.0",
-    "next-mdx-remote-client": "^1.0.3",
+    "next-mdx-remote-client": "^2.1.11",
     "rehype-katex": "^7.0.1",
     "remark-gfm": "^4.0.0",
     "remark-math": "^6.0.0",

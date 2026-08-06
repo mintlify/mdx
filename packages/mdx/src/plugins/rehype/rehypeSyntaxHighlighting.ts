@@ -159,17 +159,15 @@ function traverseNode({
 
     const linkMap = options.linkMap ?? new Map();
     if (shouldUseTwoslash) {
-      const splitCode = code.split('\n');
-
-      for (const [i, line] of splitCode.entries()) {
-        const parsedLineComment = parseLineComment(line);
-        if (!parsedLineComment) continue;
-        const { word, href } = parsedLineComment;
-        linkMap.set(word, href);
-        splitCode.splice(i, 1);
-      }
-
-      code = splitCode.join('\n');
+      code = code
+        .split('\n')
+        .filter((line) => {
+          const parsedLineComment = parseLineComment(line);
+          if (!parsedLineComment) return true;
+          linkMap.set(parsedLineComment.word, parsedLineComment.href);
+          return false;
+        })
+        .join('\n');
     }
 
     const twoslashOptions = getTwoslashOptions({ linkMap });

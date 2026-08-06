@@ -2,7 +2,7 @@ const path = require('path');
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  serverExternalPackages: ['@shikijs/twoslash'],
+  serverExternalPackages: ['@shikijs/twoslash', 'twoslash'],
   outputFileTracingIncludes: {
     '/render': [
       path.relative(

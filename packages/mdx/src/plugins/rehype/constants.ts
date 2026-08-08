@@ -6,17 +6,16 @@ import {
 } from '@shikijs/transformers';
 import type { ShikiTransformer } from '@shikijs/types';
 import { createCssVariablesTheme } from 'shiki/core';
-import type { BundledLanguage, ThemeRegistration } from 'shiki/types';
+import type { ThemeRegistration } from 'shiki/types';
 
-export const LINE_HIGHLIGHT_CLASS_NAME = 'line-highlight';
-export const LINE_FOCUS_CLASS_NAME = 'line-focus';
-export const LINE_DIFF_ADD_CLASS_NAME = 'line-diff line-add';
-export const LINE_DIFF_REMOVE_CLASS_NAME = 'line-diff line-remove';
+import { ShikiLang, ShikiTheme } from './types.js';
 
-export type ShikiLang = BundledLanguage | 'ansi' | 'text';
-export type ShikiTheme = (typeof SHIKI_THEMES)[number];
+const LINE_HIGHLIGHT_CLASS_NAME = 'line-highlight';
+const LINE_FOCUS_CLASS_NAME = 'line-focus';
+const LINE_DIFF_ADD_CLASS_NAME = 'line-diff line-add';
+const LINE_DIFF_REMOVE_CLASS_NAME = 'line-diff line-remove';
 
-export const SHIKI_CSS_THEME = createCssVariablesTheme({
+const SHIKI_CSS_THEME = createCssVariablesTheme({
   name: 'css-variables',
   variablePrefix: '--mint-',
   variableDefaults: {
@@ -68,23 +67,55 @@ export const SHIKI_CSS_THEME = createCssVariablesTheme({
   fontStyle: true,
 });
 
-export const DEFAULT_LANG = 'text' as const;
-export const DEFAULT_DARK_THEME: ShikiTheme = 'dark-plus' as const;
-export const DEFAULT_LIGHT_THEME: ShikiTheme = 'github-light-default' as const;
-export const DEFAULT_THEMES: [ShikiTheme, ShikiTheme, ThemeRegistration] = [
+const DEFAULT_LANG = 'text' as const;
+const DEFAULT_DARK_THEME: ShikiTheme = 'dark-plus' as const;
+const DEFAULT_LIGHT_THEME: ShikiTheme = 'github-light-default' as const;
+const DEFAULT_THEMES: [ShikiTheme, ShikiTheme, ThemeRegistration] = [
   DEFAULT_LIGHT_THEME,
   DEFAULT_DARK_THEME,
   SHIKI_CSS_THEME,
 ] as const;
 
-export const shikiColorReplacements: Partial<Record<ShikiTheme, string | Record<string, string>>> =
-  {
-    'dark-plus': {
-      '#1e1e1e': '#0B0C0E',
-    },
-  };
+const SHIKI_COLOR_REPLACEMENTS: Partial<Record<ShikiTheme, string | Record<string, string>>> = {
+  'dark-plus': {
+    '#1e1e1e': '#0B0C0E',
+  },
+};
 
-export const DEFAULT_LANG_ALIASES: Record<string, ShikiLang> = {
+const DEFAULT_LANGS = [
+  'bash',
+  'blade',
+  'c',
+  'css',
+  'c#',
+  'c++',
+  'dart',
+  'diff',
+  'go',
+  'html',
+  'java',
+  'javascript',
+  'jsx',
+  'json',
+  'kotlin',
+  'log',
+  'lua',
+  'markdown',
+  'mdx',
+  'php',
+  'powershell',
+  'python',
+  'ruby',
+  'rust',
+  'solidity',
+  'swift',
+  'toml',
+  'typescript',
+  'tsx',
+  'yaml',
+];
+
+const DEFAULT_LANG_ALIASES: Record<string, ShikiLang> = {
   ansi: 'ansi',
   abap: 'abap',
   'actionscript-3': 'actionscript-3',
@@ -400,9 +431,9 @@ export const DEFAULT_LANG_ALIASES: Record<string, ShikiLang> = {
   zig: 'zig',
 };
 
-export const UNIQUE_LANGS = Array.from(new Set(Object.values(DEFAULT_LANG_ALIASES)));
+const UNIQUE_LANGS = Array.from(new Set(Object.values(DEFAULT_LANG_ALIASES)));
 
-export const SHIKI_THEMES = [
+const SHIKI_THEMES = [
   'andromeeda',
   'aurora-x',
   'ayu-dark',
@@ -467,58 +498,39 @@ export const SHIKI_THEMES = [
   'css-variables', // for users who want to use custom CSS to style their code blocks
 ] as const;
 
-export const DEFAULT_LANGS = [
-  'bash',
-  'blade',
-  'c',
-  'css',
-  'c#',
-  'c++',
-  'dart',
-  'diff',
-  'go',
-  'html',
-  'java',
-  'javascript',
-  'jsx',
-  'json',
-  'kotlin',
-  'log',
-  'lua',
-  'markdown',
-  'mdx',
-  'php',
-  'powershell',
-  'python',
-  'ruby',
-  'rust',
-  'solidity',
-  'swift',
-  'toml',
-  'typescript',
-  'tsx',
-  'yaml',
-];
-
-export const matchAlgorithm = {
-  matchAlgorithm: 'v3',
-} as const;
-
-export const SHIKI_TRANSFORMERS: ShikiTransformer[] = [
+const SHIKI_TRANSFORMERS: ShikiTransformer[] = [
   transformerMetaHighlight({
     className: LINE_HIGHLIGHT_CLASS_NAME,
   }),
   transformerNotationHighlight({
-    ...matchAlgorithm,
+    matchAlgorithm: 'v3',
     classActiveLine: LINE_HIGHLIGHT_CLASS_NAME,
   }),
   transformerNotationFocus({
-    ...matchAlgorithm,
+    matchAlgorithm: 'v3',
     classActiveLine: LINE_FOCUS_CLASS_NAME,
   }),
   transformerNotationDiff({
-    ...matchAlgorithm,
+    matchAlgorithm: 'v3',
     classLineAdd: LINE_DIFF_ADD_CLASS_NAME,
     classLineRemove: LINE_DIFF_REMOVE_CLASS_NAME,
   }),
 ];
+
+export {
+  LINE_HIGHLIGHT_CLASS_NAME,
+  LINE_FOCUS_CLASS_NAME,
+  LINE_DIFF_ADD_CLASS_NAME,
+  LINE_DIFF_REMOVE_CLASS_NAME,
+  SHIKI_CSS_THEME,
+  DEFAULT_LANG,
+  DEFAULT_DARK_THEME,
+  DEFAULT_LIGHT_THEME,
+  DEFAULT_THEMES,
+  SHIKI_COLOR_REPLACEMENTS,
+  DEFAULT_LANG_ALIASES,
+  UNIQUE_LANGS,
+  SHIKI_THEMES,
+  DEFAULT_LANGS,
+  SHIKI_TRANSFORMERS,
+};

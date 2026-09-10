@@ -12,6 +12,7 @@ import {
   shikiColorReplacements,
   DEFAULT_LANG_ALIASES,
   DEFAULT_LANG,
+  DEFAULT_LANGS,
   DEFAULT_DARK_THEME,
   DEFAULT_LIGHT_THEME,
   DEFAULT_THEMES,
@@ -31,8 +32,7 @@ export type RehypeSyntaxHighlightingOptions = {
 
 let highlighterPromise: Promise<Highlighter> | null = null;
 
-// grammars are compiled on first use instead of all 30 defaults up front; a cold
-// process that highlights two languages should not pay for the other 28
+// grammars compile on first use instead of all defaults up front
 async function getHighlighter(): Promise<Highlighter> {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
@@ -63,8 +63,7 @@ type TwoslashModule = {
 
 let twoslashModulePromise: Promise<TwoslashModule> | null = null;
 
-// twoslash pulls in typescript and the rich renderer; only blocks flagged with the
-// twoslash meta need them, so keep them off the cold-start path
+// only twoslash blocks need typescript, keep it off the cold path
 function getTwoslashModule(): Promise<TwoslashModule> {
   if (!twoslashModulePromise) {
     twoslashModulePromise = Promise.all([
@@ -79,10 +78,7 @@ function getTwoslashModule(): Promise<TwoslashModule> {
   return twoslashModulePromise;
 }
 
-// highlighted output is a pure function of (code, lang, themes) for bundled
-// grammars; localized docs and shared snippets repeat the same blocks across
-// pages, so keep recent results in-process. entries are cloned on the way out
-// because downstream plugins mutate the tree
+// output is pure in (code, lang, themes) for bundled grammars; cloned out since later plugins mutate
 const HIGHLIGHT_CACHE_LIMIT = 4000;
 const HIGHLIGHT_CACHE_MAX_CODE_LENGTH = 50_000;
 const highlightCache = new Map<string, Element>();
@@ -193,7 +189,14 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         lang = DEFAULT_LANG;
       }
 
-      const twoslash = hasTwoslashFlag(node) ? getTwoslashModule() : undefined;
+      // twoslash renders popups through shiki with whatever the docs contain, so it
+      // needs the default grammar set the eager highlighter used to provide
+      const twoslash = hasTwoslashFlag(node)
+        ? Promise.all([
+            getTwoslashModule(),
+            ...DEFAULT_LANGS.map((defaultLang) => loadLanguage(highlighter, defaultLang)),
+          ]).then(([twoslashModule]) => twoslashModule)
+        : undefined;
       const grammar = customLanguageNames.includes(lang)
         ? undefined
         : loadLanguage(highlighter, lang);
@@ -265,8 +268,7 @@ function traverseNode({
       code = splitCode.join('\n');
     }
 
-    // transformerTwoslash builds a typescript virtual fs on construction, and with
-    // explicitTrigger it is a no-op for blocks without the twoslash meta flag
+    // transformerTwoslash builds a ts virtual fs on construction; a no-op without the flag
     const transformers = shouldUseTwoslash
       ? [
           ...SHIKI_TRANSFORMERS,

@@ -467,7 +467,7 @@ export const SHIKI_THEMES = [
   'css-variables', // for users who want to use custom CSS to style their code blocks
 ] as const;
 
-export const DEFAULT_LANGS = [
+export const DEFAULT_LANGS: ShikiLang[] = [
   'bash',
   'blade',
   'c',

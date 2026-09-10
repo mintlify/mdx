@@ -1,5 +1,5 @@
 import { type } from 'arktype';
-import type { Element, Root } from 'hast';
+import type { Element, ElementContent, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from 'mdast-util-mdx-jsx';
 import { createHighlighter, type Highlighter } from 'shiki';
@@ -77,6 +77,44 @@ function getTwoslashModule(): Promise<TwoslashModule> {
     }));
   }
   return twoslashModulePromise;
+}
+
+// highlighted output is a pure function of (code, lang, themes) for bundled
+// grammars; localized docs and shared snippets repeat the same blocks across
+// pages, so keep recent results in-process. entries are cloned on the way out
+// because downstream plugins mutate the tree
+const HIGHLIGHT_CACHE_LIMIT = 4000;
+const HIGHLIGHT_CACHE_MAX_CODE_LENGTH = 50_000;
+const highlightCache = new Map<string, Element>();
+
+function getCachedHighlight(key: string): Element | undefined {
+  const hit = highlightCache.get(key);
+  if (!hit) return undefined;
+  highlightCache.delete(key);
+  highlightCache.set(key, hit);
+  return cloneElement(hit);
+}
+
+function setCachedHighlight(key: string, element: Element): void {
+  if (highlightCache.size >= HIGHLIGHT_CACHE_LIMIT) {
+    const oldest = highlightCache.keys().next().value;
+    if (oldest !== undefined) highlightCache.delete(oldest);
+  }
+  highlightCache.set(key, cloneElement(element));
+}
+
+function cloneElement(element: Element): Element {
+  return {
+    type: 'element',
+    tagName: element.tagName,
+    properties: { ...element.properties },
+    children: element.children.map(cloneContent),
+  };
+}
+
+function cloneContent(content: ElementContent): ElementContent {
+  if (content.type === 'element') return cloneElement(content);
+  return { ...content };
 }
 
 function hasTwoslashFlag(node: Element): boolean {
@@ -160,9 +198,20 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         ? undefined
         : loadLanguage(highlighter, lang);
 
+      const cacheable = !twoslash && !customLanguageNames.includes(lang);
+
       nodesToProcess.push(
         Promise.all([grammar, twoslash]).then(([, twoslashModule]) => {
-          traverseNode({ node, index, parent, highlighter, lang, options, twoslashModule });
+          traverseNode({
+            node,
+            index,
+            parent,
+            highlighter,
+            lang,
+            options,
+            twoslashModule,
+            cacheable,
+          });
         })
       );
     });
@@ -178,6 +227,7 @@ function traverseNode({
   lang,
   options,
   twoslashModule,
+  cacheable,
 }: {
   node: Element;
   index: number;
@@ -186,6 +236,7 @@ function traverseNode({
   lang: ShikiLang;
   options: RehypeSyntaxHighlightingOptions;
   twoslashModule: TwoslashModule | undefined;
+  cacheable: boolean;
 }) {
   try {
     let code = toString(node);
@@ -223,24 +274,37 @@ function traverseNode({
         ]
       : SHIKI_TRANSFORMERS;
 
-    const hast = highlighter.codeToHast(code, {
-      lang: lang ?? DEFAULT_LANG,
-      meta: shouldUseTwoslash ? { __raw: 'twoslash' } : undefined,
-      themes: {
-        light:
-          options.themes?.light ??
-          options.theme ??
-          (options.codeStyling === 'dark' ? DEFAULT_DARK_THEME : DEFAULT_LIGHT_THEME),
-        dark: options.themes?.dark ?? options.theme ?? DEFAULT_DARK_THEME,
-      },
-      colorReplacements: shikiColorReplacements,
-      tabindex: false,
-      tokenizeMaxLineLength: 1000,
-      transformers,
-    });
+    const themes = {
+      light:
+        options.themes?.light ??
+        options.theme ??
+        (options.codeStyling === 'dark' ? DEFAULT_DARK_THEME : DEFAULT_LIGHT_THEME),
+      dark: options.themes?.dark ?? options.theme ?? DEFAULT_DARK_THEME,
+    };
 
-    const codeElement = hast.children[0] as Element;
-    if (!codeElement) return;
+    const cacheKey =
+      cacheable && !shouldUseTwoslash && code.length <= HIGHLIGHT_CACHE_MAX_CODE_LENGTH
+        ? `${lang}\0${themes.light}\0${themes.dark}\0${code}`
+        : undefined;
+
+    let codeElement = cacheKey ? getCachedHighlight(cacheKey) : undefined;
+
+    if (!codeElement) {
+      const hast = highlighter.codeToHast(code, {
+        lang: lang ?? DEFAULT_LANG,
+        meta: shouldUseTwoslash ? { __raw: 'twoslash' } : undefined,
+        themes,
+        colorReplacements: shikiColorReplacements,
+        tabindex: false,
+        tokenizeMaxLineLength: 1000,
+        transformers,
+      });
+
+      const highlighted = hast.children[0];
+      if (!highlighted || highlighted.type !== 'element') return;
+      if (cacheKey) setCachedHighlight(cacheKey, highlighted);
+      codeElement = highlighted;
+    }
 
     const preChild = codeElement.children[0] as Element;
 

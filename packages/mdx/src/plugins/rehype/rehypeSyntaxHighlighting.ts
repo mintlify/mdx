@@ -172,7 +172,11 @@ function traverseNode({
       code = splitCode.join('\n');
     }
 
-    const twoslashOptions = getTwoslashOptions({ linkMap });
+    // transformerTwoslash builds a typescript virtual fs on construction, and with
+    // explicitTrigger it is a no-op for blocks without the twoslash meta flag
+    const transformers = shouldUseTwoslash
+      ? [...SHIKI_TRANSFORMERS, transformerTwoslash(getTwoslashOptions({ linkMap }))]
+      : SHIKI_TRANSFORMERS;
 
     const hast = highlighter.codeToHast(code, {
       lang: lang ?? DEFAULT_LANG,
@@ -187,7 +191,7 @@ function traverseNode({
       colorReplacements: shikiColorReplacements,
       tabindex: false,
       tokenizeMaxLineLength: 1000,
-      transformers: [...SHIKI_TRANSFORMERS, transformerTwoslash(twoslashOptions)],
+      transformers,
     });
 
     const codeElement = hast.children[0] as Element;

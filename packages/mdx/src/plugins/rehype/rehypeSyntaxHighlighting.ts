@@ -1,4 +1,3 @@
-import { transformerTwoslash } from '@shikijs/twoslash';
 import { type } from 'arktype';
 import type { Element, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
@@ -13,15 +12,14 @@ import {
   shikiColorReplacements,
   DEFAULT_LANG_ALIASES,
   DEFAULT_LANG,
+  DEFAULT_LANGS,
   DEFAULT_DARK_THEME,
   DEFAULT_LIGHT_THEME,
   DEFAULT_THEMES,
-  DEFAULT_LANGS,
   SHIKI_TRANSFORMERS,
   UNIQUE_LANGS,
 } from './shiki-constants.js';
 import { TextMateGrammar, TextMateGrammarType } from './shiki/custom-language.js';
-import { getTwoslashOptions, parseLineComment } from './twoslash/config.js';
 import { getLanguage } from './utils.js';
 
 export type RehypeSyntaxHighlightingOptions = {
@@ -34,14 +32,57 @@ export type RehypeSyntaxHighlightingOptions = {
 
 let highlighterPromise: Promise<Highlighter> | null = null;
 
+// grammars compile on first use instead of all defaults up front
 async function getHighlighter(): Promise<Highlighter> {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
       themes: DEFAULT_THEMES,
-      langs: DEFAULT_LANGS,
+      langs: [],
     });
   }
   return highlighterPromise;
+}
+
+const languageLoads = new Map<string, Promise<void>>();
+
+function loadLanguage(highlighter: Highlighter, lang: ShikiLang): Promise<void> {
+  if (highlighter.getLoadedLanguages().includes(lang)) return Promise.resolve();
+  let pending = languageLoads.get(lang);
+  if (!pending) {
+    pending = highlighter.loadLanguage(lang).finally(() => languageLoads.delete(lang));
+    languageLoads.set(lang, pending);
+  }
+  return pending;
+}
+
+type TwoslashModule = {
+  transformerTwoslash: typeof import('@shikijs/twoslash').transformerTwoslash;
+  getTwoslashOptions: typeof import('./twoslash/config.js').getTwoslashOptions;
+  parseLineComment: typeof import('./twoslash/config.js').parseLineComment;
+};
+
+let twoslashModulePromise: Promise<TwoslashModule> | null = null;
+
+// only twoslash blocks need typescript, keep it off the cold path
+function getTwoslashModule(): Promise<TwoslashModule> {
+  if (!twoslashModulePromise) {
+    twoslashModulePromise = Promise.all([
+      import('@shikijs/twoslash'),
+      import('./twoslash/config.js'),
+    ]).then(([twoslash, config]) => ({
+      transformerTwoslash: twoslash.transformerTwoslash,
+      getTwoslashOptions: config.getTwoslashOptions,
+      parseLineComment: config.parseLineComment,
+    }));
+  }
+  return twoslashModulePromise;
+}
+
+function hasTwoslashFlag(node: Element): boolean {
+  const meta = node.data?.meta;
+  return (
+    typeof meta === 'string' && meta.split(' ').some((str) => str.toLowerCase() === 'twoslash')
+  );
 }
 
 export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?], Root, Root> = (
@@ -109,22 +150,27 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         getLanguage(child, DEFAULT_LANG_ALIASES) ??
         DEFAULT_LANG;
 
-      if (
-        !DEFAULT_LANGS.includes(lang) &&
-        !customLanguageNames.includes(lang) &&
-        UNIQUE_LANGS.includes(lang)
-      ) {
-        nodesToProcess.push(
-          highlighter.loadLanguage(lang).then(() => {
-            traverseNode({ node, index, parent, highlighter, lang, options });
-          })
-        );
-      } else {
-        if (!UNIQUE_LANGS.includes(lang) && !customLanguageNames.includes(lang)) {
-          lang = DEFAULT_LANG;
-        }
-        traverseNode({ node, index, parent, highlighter, lang, options });
+      if (!UNIQUE_LANGS.includes(lang) && !customLanguageNames.includes(lang)) {
+        lang = DEFAULT_LANG;
       }
+
+      // twoslash renders popups through shiki with whatever the docs contain, so it
+      // needs the default grammar set the eager highlighter used to provide
+      const twoslash = hasTwoslashFlag(node)
+        ? Promise.all([
+            getTwoslashModule(),
+            ...DEFAULT_LANGS.map((defaultLang) => loadLanguage(highlighter, defaultLang)),
+          ]).then(([twoslashModule]) => twoslashModule)
+        : undefined;
+      const grammar = customLanguageNames.includes(lang)
+        ? undefined
+        : loadLanguage(highlighter, lang);
+
+      nodesToProcess.push(
+        Promise.all([grammar, twoslash]).then(([, twoslashModule]) => {
+          traverseNode({ node, index, parent, highlighter, lang, options, twoslashModule });
+        })
+      );
     });
     await Promise.all(nodesToProcess);
   };
@@ -137,6 +183,7 @@ function traverseNode({
   highlighter,
   lang,
   options,
+  twoslashModule,
 }: {
   node: Element;
   index: number;
@@ -144,13 +191,14 @@ function traverseNode({
   highlighter: Highlighter;
   lang: ShikiLang;
   options: RehypeSyntaxHighlightingOptions;
+  twoslashModule: TwoslashModule | undefined;
 }) {
   try {
     let code = toString(node);
 
     const meta = node.data?.meta?.split(' ') ?? [];
     const twoslashIndex = meta.findIndex((str) => str.toLowerCase() === 'twoslash');
-    const shouldUseTwoslash = twoslashIndex > -1;
+    const shouldUseTwoslash = twoslashIndex > -1 && twoslashModule !== undefined;
 
     if (node.data && node.data.meta && shouldUseTwoslash) {
       meta.splice(twoslashIndex, 1);
@@ -162,7 +210,7 @@ function traverseNode({
       const splitCode = code.split('\n');
 
       for (const [i, line] of splitCode.entries()) {
-        const parsedLineComment = parseLineComment(line);
+        const parsedLineComment = twoslashModule.parseLineComment(line);
         if (!parsedLineComment) continue;
         const { word, href } = parsedLineComment;
         linkMap.set(word, href);
@@ -172,7 +220,13 @@ function traverseNode({
       code = splitCode.join('\n');
     }
 
-    const twoslashOptions = getTwoslashOptions({ linkMap });
+    // transformerTwoslash builds a ts virtual fs on construction; a no-op without the flag
+    const transformers = shouldUseTwoslash
+      ? [
+          ...SHIKI_TRANSFORMERS,
+          twoslashModule.transformerTwoslash(twoslashModule.getTwoslashOptions({ linkMap })),
+        ]
+      : SHIKI_TRANSFORMERS;
 
     const hast = highlighter.codeToHast(code, {
       lang: lang ?? DEFAULT_LANG,
@@ -187,7 +241,7 @@ function traverseNode({
       colorReplacements: shikiColorReplacements,
       tabindex: false,
       tokenizeMaxLineLength: 1000,
-      transformers: [...SHIKI_TRANSFORMERS, transformerTwoslash(twoslashOptions)],
+      transformers,
     });
 
     const codeElement = hast.children[0] as Element;

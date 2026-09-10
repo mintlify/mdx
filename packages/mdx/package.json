@@ -58,6 +58,7 @@
     "clean:all": "rimraf node_modules .eslintcache && yarn clean:build",
     "watch": "tsc --watch",
     "type": "tsc --noEmit",
+    "test": "vitest run",
     "lint": "eslint . --cache",
     "format": "prettier . --write",
     "format:check": "prettier . --check"
@@ -86,7 +87,8 @@
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "rimraf": "^5.0.1",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "vitest": "2.1.9"
   },
   "peerDependencies": {
     "@base-ui/react": "^1.6.0",

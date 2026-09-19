@@ -10,6 +10,8 @@ import ts from 'typescript';
 
 import { createFileSystemTypesCache } from './cache-fs.js';
 
+export { transformerTwoslash } from '@shikijs/twoslash';
+
 const twoslashCompilerOptions: ts.CompilerOptions = {
   target: ts.ScriptTarget.ESNext,
   lib: ['ESNext', 'DOM', 'esnext', 'dom', 'es2020'],

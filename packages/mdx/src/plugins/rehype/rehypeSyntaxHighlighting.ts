@@ -1,4 +1,3 @@
-import { transformerTwoslash } from '@shikijs/twoslash';
 import { type } from 'arktype';
 import type { Element, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
@@ -21,8 +20,24 @@ import {
   UNIQUE_LANGS,
 } from './shiki-constants.js';
 import { TextMateGrammar, TextMateGrammarType } from './shiki/custom-language.js';
-import { getTwoslashOptions, parseLineComment } from './twoslash/config.js';
 import { getLanguage } from './utils.js';
+
+type Twoslash = typeof import('./twoslash/config.js');
+
+let twoslashPromise: Promise<Twoslash> | null = null;
+
+// the twoslash config pulls typescript itself into whichever bundle imports
+// this plugin, so it only loads once a code block asks for it
+function loadTwoslash(): Promise<Twoslash> {
+  if (!twoslashPromise) {
+    twoslashPromise = import('./twoslash/config.js');
+  }
+  return twoslashPromise;
+}
+
+function wantsTwoslash(node: Element): boolean {
+  return (node.data?.meta?.split(' ') ?? []).some((str) => str.toLowerCase() === 'twoslash');
+}
 
 export type RehypeSyntaxHighlightingOptions = {
   theme?: ShikiTheme;
@@ -109,22 +124,27 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         getLanguage(child, DEFAULT_LANG_ALIASES) ??
         DEFAULT_LANG;
 
-      if (
+      const needsLanguage =
         !DEFAULT_LANGS.includes(lang) &&
         !customLanguageNames.includes(lang) &&
-        UNIQUE_LANGS.includes(lang)
-      ) {
-        nodesToProcess.push(
-          highlighter.loadLanguage(lang).then(() => {
-            traverseNode({ node, index, parent, highlighter, lang, options });
-          })
-        );
-      } else {
-        if (!UNIQUE_LANGS.includes(lang) && !customLanguageNames.includes(lang)) {
-          lang = DEFAULT_LANG;
-        }
-        traverseNode({ node, index, parent, highlighter, lang, options });
+        UNIQUE_LANGS.includes(lang);
+      if (!needsLanguage && !UNIQUE_LANGS.includes(lang) && !customLanguageNames.includes(lang)) {
+        lang = DEFAULT_LANG;
       }
+
+      const twoslash = wantsTwoslash(node) ? loadTwoslash() : undefined;
+      if (!needsLanguage && !twoslash) {
+        traverseNode({ node, index, parent, highlighter, lang, options });
+        return;
+      }
+
+      nodesToProcess.push(
+        Promise.all([needsLanguage ? highlighter.loadLanguage(lang) : undefined, twoslash]).then(
+          ([, loaded]) => {
+            traverseNode({ node, index, parent, highlighter, lang, options, twoslash: loaded });
+          }
+        )
+      );
     });
     await Promise.all(nodesToProcess);
   };
@@ -137,6 +157,7 @@ function traverseNode({
   highlighter,
   lang,
   options,
+  twoslash,
 }: {
   node: Element;
   index: number;
@@ -144,25 +165,25 @@ function traverseNode({
   highlighter: Highlighter;
   lang: ShikiLang;
   options: RehypeSyntaxHighlightingOptions;
+  twoslash?: Twoslash;
 }) {
   try {
     let code = toString(node);
 
-    const meta = node.data?.meta?.split(' ') ?? [];
-    const twoslashIndex = meta.findIndex((str) => str.toLowerCase() === 'twoslash');
-    const shouldUseTwoslash = twoslashIndex > -1;
+    const transformers = [...SHIKI_TRANSFORMERS];
+    if (twoslash) {
+      const meta = node.data?.meta?.split(' ') ?? [];
+      const twoslashIndex = meta.findIndex((str) => str.toLowerCase() === 'twoslash');
+      if (node.data && node.data.meta && twoslashIndex > -1) {
+        meta.splice(twoslashIndex, 1);
+        node.data.meta = meta.join(' ').trim() || undefined;
+      }
 
-    if (node.data && node.data.meta && shouldUseTwoslash) {
-      meta.splice(twoslashIndex, 1);
-      node.data.meta = meta.join(' ').trim() || undefined;
-    }
-
-    const linkMap = options.linkMap ?? new Map();
-    if (shouldUseTwoslash) {
+      const linkMap = options.linkMap ?? new Map();
       const splitCode = code.split('\n');
 
       for (const [i, line] of splitCode.entries()) {
-        const parsedLineComment = parseLineComment(line);
+        const parsedLineComment = twoslash.parseLineComment(line);
         if (!parsedLineComment) continue;
         const { word, href } = parsedLineComment;
         linkMap.set(word, href);
@@ -170,13 +191,12 @@ function traverseNode({
       }
 
       code = splitCode.join('\n');
+      transformers.push(twoslash.transformerTwoslash(twoslash.getTwoslashOptions({ linkMap })));
     }
-
-    const twoslashOptions = getTwoslashOptions({ linkMap });
 
     const hast = highlighter.codeToHast(code, {
       lang: lang ?? DEFAULT_LANG,
-      meta: shouldUseTwoslash ? { __raw: 'twoslash' } : undefined,
+      meta: twoslash ? { __raw: 'twoslash' } : undefined,
       themes: {
         light:
           options.themes?.light ??
@@ -187,7 +207,7 @@ function traverseNode({
       colorReplacements: shikiColorReplacements,
       tabindex: false,
       tokenizeMaxLineLength: 1000,
-      transformers: [...SHIKI_TRANSFORMERS, transformerTwoslash(twoslashOptions)],
+      transformers,
     });
 
     const codeElement = hast.children[0] as Element;

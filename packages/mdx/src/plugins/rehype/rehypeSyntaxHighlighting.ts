@@ -26,8 +26,6 @@ type Twoslash = typeof import('./twoslash/config.js');
 
 let twoslashPromise: Promise<Twoslash> | null = null;
 
-// the twoslash config pulls typescript itself into whichever bundle imports
-// this plugin, so it only loads once a code block asks for it
 function loadTwoslash(): Promise<Twoslash> {
   if (!twoslashPromise) {
     twoslashPromise = import('./twoslash/config.js');

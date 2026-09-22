@@ -11,7 +11,7 @@
   "dependencies": {
     "@base-ui/react": "^1.6.0",
     "@mintlify/mdx": "workspace:^",
-    "next": "16.0.9",
+    "next": "16.3.6",
     "react": "^19.2.1",
     "react-dom": "^19.2.1"
   },

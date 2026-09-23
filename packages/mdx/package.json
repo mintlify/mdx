@@ -1,6 +1,6 @@
 {
   "name": "@mintlify/mdx",
-  "version": "4.0.5",
+  "version": "4.0.6",
   "description": "Markdown parser from Mintlify",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -32,6 +32,10 @@
     "./plugins": {
       "import": "./dist/plugins/index.js",
       "types": "./dist/plugins/index.d.ts"
+    },
+    "./plugins/shell-placeholder-transformer": {
+      "import": "./dist/plugins/rehype/shell-placeholder-transformer.js",
+      "types": "./dist/plugins/rehype/shell-placeholder-transformer.d.ts"
     },
     "./constants": {
       "import": "./dist/plugins/rehype/shiki-constants.js",

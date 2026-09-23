@@ -19,7 +19,7 @@ export const getStaticProps = (async () => {
 
 export default function Home({ mdxSource }: InferGetStaticPropsType<typeof getStaticProps>) {
   return (
-    <article className="prose mx-auto py-8">
+    <article className="prose dark:prose-invert mx-auto py-8">
       <h1>{String(mdxSource.frontmatter.title)}</h1>
 
       <MDXClient {...mdxSource} />

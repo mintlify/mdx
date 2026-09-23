@@ -5,7 +5,7 @@ export default async function Home() {
   const data = await fs.readFile(process.cwd() + '/examples/highlight-example.mdx', 'utf8');
 
   return (
-    <article className="prose mx-auto py-8">
+    <article className="prose dark:prose-invert mx-auto py-8">
       <MDXRemote source={data} parseFrontmatter />
     </article>
   );

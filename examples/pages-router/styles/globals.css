@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #111827;
+  }
+
+  .shiki {
+    background-color: var(--shiki-dark-bg) !important;
+  }
+
+  .shiki span {
+    color: var(--shiki-dark) !important;
+  }
+}
+
 @layer base {
   :root {
     --primary-light: 85 215 153;

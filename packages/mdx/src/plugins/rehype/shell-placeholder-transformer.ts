@@ -11,10 +11,6 @@ type Token = {
 
 const placeholderPattern = /<[^\s<>]{2,}>/g;
 
-function tokenAt(tokens: Token[], offset: number): Token | undefined {
-  return tokens.find((token) => token.start <= offset && offset < token.end);
-}
-
 function styledPart(token: Token, text: string, style: string): Element {
   return {
     ...token.element,
@@ -47,12 +43,23 @@ function fixLine(line: Element): void {
   }
 
   const code = tokens.map((token) => token.text).join('');
-  const corrections = new Map<number, string>();
+  const corrections = new Map<Token, { position: number; style: string }[]>();
+  let tokenIndex = 0;
+
+  // Placeholder matches are ordered, so each token only needs to be visited once.
+  function tokenAt(position: number): Token | undefined {
+    let token = tokens[tokenIndex];
+    while (token && token.end <= position) {
+      tokenIndex += 1;
+      token = tokens[tokenIndex];
+    }
+    return token;
+  }
 
   for (const match of code.matchAll(placeholderPattern)) {
     const lastCharacter = match.index + match[0].length - 2;
-    const previous = tokenAt(tokens, lastCharacter - 1);
-    const current = tokenAt(tokens, lastCharacter);
+    const previous = tokenAt(lastCharacter - 1);
+    const current = tokenAt(lastCharacter);
 
     // The shell grammar excludes the character immediately before `>` from an unquoted argument.
     // Restrict the repair to adjacent word characters within a placeholder.
@@ -61,20 +68,20 @@ function fixLine(line: Element): void {
       continue;
     if (previous.style === current.style) continue;
 
-    corrections.set(lastCharacter, previous.style);
+    const changes = corrections.get(current) ?? [];
+    changes.push({ position: lastCharacter, style: previous.style });
+    corrections.set(current, changes);
   }
 
   if (!corrections.size) return;
 
   line.children = tokens.flatMap((token) => {
-    const changes = [...corrections]
-      .filter(([position]) => token.start <= position && position < token.end)
-      .sort(([left], [right]) => left - right);
-    if (!changes.length) return [token.element];
+    const changes = corrections.get(token);
+    if (!changes) return [token.element];
 
     const parts: Element[] = [];
     let start = 0;
-    for (const [position, style] of changes) {
+    for (const { position, style } of changes) {
       const localOffset = position - token.start;
       if (start < localOffset) {
         parts.push(styledPart(token, token.text.slice(start, localOffset), token.style));

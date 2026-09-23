@@ -6,6 +6,7 @@ import { createHighlighter, type Highlighter } from 'shiki';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
+import { shellPlaceholderTransformer } from './shell-placeholder-transformer.js';
 import {
   type ShikiLang,
   type ShikiTheme,
@@ -191,6 +192,8 @@ function traverseNode({
       code = splitCode.join('\n');
       transformers.push(twoslash.transformerTwoslash(twoslash.getTwoslashOptions({ linkMap })));
     }
+
+    if (lang === 'shellscript') transformers.push(shellPlaceholderTransformer);
 
     const hast = highlighter.codeToHast(code, {
       lang: lang ?? DEFAULT_LANG,

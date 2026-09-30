@@ -81,6 +81,19 @@ async function loadLanguage(highlighter: Highlighter, lang: LoadableLanguage): P
   }
 }
 
+const MAX_CACHED_CUSTOM_LANGUAGES = 64;
+const customLanguageCache = new Map<string, ReturnType<typeof TextMateGrammar>>();
+
+// every page of a site sends the same grammar strings; shiki doesn't mutate the parsed grammar
+function parseCustomLanguage(unparsedLang: string): ReturnType<typeof TextMateGrammar> {
+  const cached = customLanguageCache.get(unparsedLang);
+  if (cached !== undefined) return cached;
+  const lang = TextMateGrammar(JSON.parse(unparsedLang));
+  if (customLanguageCache.size >= MAX_CACHED_CUSTOM_LANGUAGES) customLanguageCache.clear();
+  customLanguageCache.set(unparsedLang, lang);
+  return lang;
+}
+
 export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?], Root, Root> = (
   options = {}
 ) => {
@@ -106,8 +119,7 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         )
         .map((theme) => highlighter.loadTheme(theme)),
       ...(options.customLanguages?.map(async (unparsedLang) => {
-        const parsedLang = JSON.parse(unparsedLang);
-        const lang = TextMateGrammar(parsedLang);
+        const lang = parseCustomLanguage(unparsedLang);
         if (lang instanceof type.errors) {
           console.error(lang.summary);
           return;

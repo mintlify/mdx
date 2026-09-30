@@ -58,6 +58,29 @@ async function getHighlighter(): Promise<Highlighter> {
   return highlighterPromise;
 }
 
+type LoadableLanguage = Parameters<Highlighter['loadLanguage']>[0];
+
+function getLoadedGrammars(highlighter: Highlighter): Set<ReturnType<Highlighter['getLanguage']>> {
+  const grammars = new Set<ReturnType<Highlighter['getLanguage']>>();
+  for (const name of highlighter.getLoadedLanguages()) {
+    try {
+      grammars.add(highlighter.getLanguage(name));
+    } catch {}
+  }
+  return grammars;
+}
+
+// loading a language that a loaded grammar embeds lazily makes shiki rebuild that grammar
+// without disposing the old one, leaking its oniguruma scanners in wasm memory
+async function loadLanguage(highlighter: Highlighter, lang: LoadableLanguage): Promise<void> {
+  const before = getLoadedGrammars(highlighter);
+  await highlighter.loadLanguage(lang);
+  const after = getLoadedGrammars(highlighter);
+  for (const grammar of before) {
+    if (!after.has(grammar)) (grammar as { dispose?: () => void }).dispose?.();
+  }
+}
+
 export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?], Root, Root> = (
   options = {}
 ) => {
@@ -89,7 +112,7 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
           console.error(lang.summary);
           return;
         }
-        await highlighter.loadLanguage(lang);
+        await loadLanguage(highlighter, lang);
         const possibleNames = [lang.name, lang.displayName, ...(lang.aliases ?? [])];
         customLanguageNames.push(...possibleNames.filter((l) => l != undefined));
       }) ?? []),
@@ -138,7 +161,7 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
       }
 
       nodesToProcess.push(
-        Promise.all([needsLanguage ? highlighter.loadLanguage(lang) : undefined, twoslash]).then(
+        Promise.all([needsLanguage ? loadLanguage(highlighter, lang) : undefined, twoslash]).then(
           ([, loaded]) => {
             traverseNode({ node, index, parent, highlighter, lang, options, twoslash: loaded });
           }

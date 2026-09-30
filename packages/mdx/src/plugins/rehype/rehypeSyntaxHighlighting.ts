@@ -208,6 +208,8 @@ function traverseNode({
       colorReplacements: shikiColorReplacements,
       tabindex: false,
       tokenizeMaxLineLength: 1000,
+      // the default 500ms wall-clock limit makes output depend on gc pauses
+      tokenizeTimeLimit: 0,
       transformers,
     });
 

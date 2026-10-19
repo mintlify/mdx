@@ -2,7 +2,8 @@ import { type } from 'arktype';
 import type { Element, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from 'mdast-util-mdx-jsx';
-import { createHighlighter, type Highlighter } from 'shiki';
+import { createHighlighter, type Highlighter, type ShikiInternal } from 'shiki';
+import { codeToHast } from 'shiki/core';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
 
@@ -21,6 +22,7 @@ import {
   UNIQUE_LANGS,
 } from './shiki-constants.js';
 import { TextMateGrammar, TextMateGrammarType } from './shiki/custom-language.js';
+import { singlePassInternal } from './shiki/single-pass.js';
 import { getLanguage } from './utils.js';
 
 type Twoslash = typeof import('./twoslash/config.js');
@@ -47,6 +49,7 @@ export type RehypeSyntaxHighlightingOptions = {
 };
 
 let highlighterPromise: Promise<Highlighter> | null = null;
+let singlePass: ShikiInternal | null = null;
 
 async function getHighlighter(): Promise<Highlighter> {
   if (!highlighterPromise) {
@@ -97,12 +100,16 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
     }
 
     const highlighter = await getHighlighter();
+    const fast = (singlePass ??= singlePassInternal(highlighter));
+    const loadedThemes = highlighter.getLoadedThemes();
 
     await Promise.all([
       ...themesToLoad
         .filter(
           (theme): theme is Exclude<ShikiTheme, 'css-variables'> =>
-            !DEFAULT_THEMES.includes(theme) && theme !== 'css-variables'
+            !DEFAULT_THEMES.includes(theme) &&
+            theme !== 'css-variables' &&
+            !loadedThemes.includes(theme)
         )
         .map((theme) => highlighter.loadTheme(theme)),
       ...(options.customLanguages?.map(async (unparsedLang) => {
@@ -155,15 +162,17 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
       }
 
       const twoslash = wantsTwoslash(node) ? loadTwoslash() : undefined;
+      const internal =
+        twoslash || customLanguageNames.includes(lang) ? highlighter.getInternalContext() : fast;
       if (!needsLanguage && !twoslash) {
-        traverseNode({ node, index, parent, highlighter, lang, options });
+        traverseNode({ node, index, parent, internal, lang, options });
         return;
       }
 
       nodesToProcess.push(
         Promise.all([needsLanguage ? loadLanguage(highlighter, lang) : undefined, twoslash]).then(
           ([, loaded]) => {
-            traverseNode({ node, index, parent, highlighter, lang, options, twoslash: loaded });
+            traverseNode({ node, index, parent, internal, lang, options, twoslash: loaded });
           }
         )
       );
@@ -176,7 +185,7 @@ function traverseNode({
   node,
   index,
   parent,
-  highlighter,
+  internal,
   lang,
   options,
   twoslash,
@@ -184,7 +193,7 @@ function traverseNode({
   node: Element;
   index: number;
   parent: Element | Root | MdxJsxTextElementHast | MdxJsxFlowElementHast;
-  highlighter: Highlighter;
+  internal: ShikiInternal;
   lang: ShikiLang;
   options: RehypeSyntaxHighlightingOptions;
   twoslash?: Twoslash;
@@ -218,7 +227,7 @@ function traverseNode({
 
     if (lang === 'shellscript') transformers.push(shellPlaceholderTransformer);
 
-    const hast = highlighter.codeToHast(code, {
+    const hast = codeToHast(internal, code, {
       lang: lang ?? DEFAULT_LANG,
       meta: twoslash ? { __raw: 'twoslash' } : undefined,
       themes: {

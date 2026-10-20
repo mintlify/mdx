@@ -1,5 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { setFlagsFromString } from 'node:v8';
+import { runInNewContext } from 'node:vm';
 import { createHighlighter } from 'shiki';
 
 import { rehypeSyntaxHighlighting } from '../dist/plugins/index.js';
@@ -159,6 +161,48 @@ test('deeply nested code matches shiki codeToHast', async () => {
   const root = tree('json', code);
   await rehypeSyntaxHighlighting()(root);
   assert.deepStrictEqual(root.children[0], await expected('json', code, undefined, {}));
+});
+
+test('deeply nested blocks highlight about as fast as shiki codeToHast', async () => {
+  for (const [lang, open, sep] of [
+    ['json', '[', ','],
+    ['clojure', '(', ' '],
+    ['typescript', '(', ','],
+  ]) {
+    const code = [
+      ...Array.from({ length: 90 }, () => open.repeat(30)),
+      ...Array.from({ length: 20 }, (_, i) => `${i}${sep}${`1${sep}`.repeat(440)}// [!code ++]`),
+    ].join('\n');
+    const meta = '{1,3}';
+    await expected(lang, '1', undefined, {});
+    await rehypeSyntaxHighlighting()(tree(lang, '1'));
+    let start = performance.now();
+    const want = await expected(lang, code, meta, {});
+    const stock = performance.now() - start;
+    const root = tree(lang, code, meta);
+    start = performance.now();
+    await rehypeSyntaxHighlighting()(root);
+    const elapsed = performance.now() - start;
+    assert.deepStrictEqual(root.children[0], want, lang);
+    assert.ok(elapsed < 3 * stock + 250, `${lang}: ${elapsed} ms vs ${stock} ms`);
+  }
+});
+
+test('the line cache stays bounded over many distinct lines', async () => {
+  setFlagsFromString('--expose-gc');
+  const gc = runInNewContext('gc');
+  gc();
+  const base = process.memoryUsage().heapUsed;
+  let peak = 0;
+  for (let page = 0; page < 80; page++) {
+    const code = Array.from({ length: 10_000 }, (_, i) => `${page * 10_000 + i}`).join('\n');
+    await rehypeSyntaxHighlighting()(tree('json', code));
+    if (page % 10 === 9) {
+      gc();
+      peak = Math.max(peak, process.memoryUsage().heapUsed - base);
+    }
+  }
+  assert.ok(peak < 64e6, `${peak / 1e6} MB`);
 });
 
 test('custom languages still highlight', async () => {

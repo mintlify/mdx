@@ -40,7 +40,11 @@ type Grammar = {
   ): { tokens: { startIndex: number; scopes: string[] }[]; ruleStack: unknown };
 };
 
-const CACHE_LIMIT = 8_000_000;
+const CACHE_LIMIT = 32_000_000;
+const MAX_SCOPES = 32;
+
+export const tooDeep = new Error('scope stack too deep for single-pass highlighting');
+const deep: Scan = { starts: [], nodes: [], ruleStack: null };
 
 const detach = (value: string): string => (' ' + value).slice(1);
 
@@ -51,7 +55,7 @@ const themeIndexes = new Map<unknown, number>();
 let nextId = 0;
 let interned = new Map<string, number>();
 let scans = new Map<string, Scan>();
-const ids = new WeakMap<object, number>();
+let ids = new WeakMap<object, number>();
 const grammarScopes = new WeakMap<Grammar, Scopes>();
 const wrappedGrammars = new WeakMap<Grammar, object>();
 
@@ -61,6 +65,7 @@ function scopesOf(grammar: Grammar): Scopes {
     cacheSize = 0;
     scans = new Map();
     interned = new Map();
+    ids = new WeakMap();
   }
   let scopes = grammarScopes.get(grammar);
   if (scopes?.generation !== generation) {
@@ -79,7 +84,7 @@ function scopeNode(scopes: Scopes, names: string[]): ScopeNode | null {
       const scopeName = detach(name);
       child = { parent: node, scopeName, children: new Map(), metadata: [] };
       children.set(scopeName, child);
-      cacheSize += 100;
+      cacheSize += 400 + 2 * scopeName.length;
     }
     node = child;
     children = child.children;
@@ -147,12 +152,16 @@ function chainId<T extends { parent: T | null }>(node: T | null, label: (node: T
     pending.push(current);
     current = current.parent;
   }
+  cacheSize += 200 * pending.length;
   let id: number | '' = current ? (ids.get(current) as number) : '';
   for (let index = pending.length - 1; index >= 0; index--) {
     const item = pending[index] as T;
     const key = `${id}${label(item)}`;
     let next = interned.get(key);
-    if (next === undefined) interned.set(detach(key), (next = nextId++));
+    if (next === undefined) {
+      interned.set(detach(key), (next = nextId++));
+      cacheSize += 100 + 2 * key.length;
+    }
     ids.set(item, next);
     id = next;
   }
@@ -181,15 +190,24 @@ function scanLine(grammar: Grammar, scopes: Scopes, line: string, state: State, 
   const key = `${grammarId(grammar)}:${stateId(state)}:${line}`;
   let scan = scans.get(key);
   if (!scan) {
-    const result = grammar.tokenizeLine(line, state, limit);
-    scan = {
-      starts: result.tokens.map((token) => token.startIndex),
-      nodes: result.tokens.map((token) => scopeNode(scopes, token.scopes)),
-      ruleStack: result.ruleStack,
-    };
-    cacheSize += key.length + 8 * scan.starts.length;
+    const result =
+      (line.match(/[([{<>]/g)?.length ?? 0) > MAX_SCOPES
+        ? null
+        : grammar.tokenizeLine(line, state, limit);
+    if (!result || result.tokens.some((token) => token.scopes.length > MAX_SCOPES)) {
+      scan = deep;
+    } else {
+      scan = {
+        starts: result.tokens.map((token) => token.startIndex),
+        nodes: result.tokens.map((token) => scopeNode(scopes, token.scopes)),
+        ruleStack: result.ruleStack,
+      };
+      stateId(result.ruleStack as State);
+    }
+    cacheSize += 200 + 2 * key.length + 16 * scan.starts.length;
     scans.set(detach(key), scan);
   }
+  if (scan === deep) throw tooDeep;
   return scan;
 }
 

@@ -2,7 +2,12 @@ import { type } from 'arktype';
 import type { Element, Root } from 'hast';
 import { toString } from 'hast-util-to-string';
 import type { MdxJsxFlowElementHast, MdxJsxTextElementHast } from 'mdast-util-mdx-jsx';
-import { createHighlighter, type Highlighter, type ShikiInternal } from 'shiki';
+import {
+  createHighlighter,
+  type CodeToHastOptions,
+  type Highlighter,
+  type ShikiInternal,
+} from 'shiki';
 import { codeToHast } from 'shiki/core';
 import type { Plugin } from 'unified';
 import { visit } from 'unist-util-visit';
@@ -22,7 +27,7 @@ import {
   UNIQUE_LANGS,
 } from './shiki-constants.js';
 import { TextMateGrammar, TextMateGrammarType } from './shiki/custom-language.js';
-import { singlePassInternal } from './shiki/single-pass.js';
+import { singlePassInternal, tooDeep } from './shiki/single-pass.js';
 import { getLanguage } from './utils.js';
 
 type Twoslash = typeof import('./twoslash/config.js');
@@ -165,14 +170,23 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
       const internal =
         twoslash || customLanguageNames.includes(lang) ? highlighter.getInternalContext() : fast;
       if (!needsLanguage && !twoslash) {
-        traverseNode({ node, index, parent, internal, lang, options });
+        traverseNode({ node, index, parent, highlighter, internal, lang, options });
         return;
       }
 
       nodesToProcess.push(
         Promise.all([needsLanguage ? loadLanguage(highlighter, lang) : undefined, twoslash]).then(
           ([, loaded]) => {
-            traverseNode({ node, index, parent, internal, lang, options, twoslash: loaded });
+            traverseNode({
+              node,
+              index,
+              parent,
+              highlighter,
+              internal,
+              lang,
+              options,
+              twoslash: loaded,
+            });
           }
         )
       );
@@ -185,6 +199,7 @@ function traverseNode({
   node,
   index,
   parent,
+  highlighter,
   internal,
   lang,
   options,
@@ -193,6 +208,7 @@ function traverseNode({
   node: Element;
   index: number;
   parent: Element | Root | MdxJsxTextElementHast | MdxJsxFlowElementHast;
+  highlighter: Highlighter;
   internal: ShikiInternal;
   lang: ShikiLang;
   options: RehypeSyntaxHighlightingOptions;
@@ -227,7 +243,7 @@ function traverseNode({
 
     if (lang === 'shellscript') transformers.push(shellPlaceholderTransformer);
 
-    const hast = codeToHast(internal, code, {
+    const hastOptions: CodeToHastOptions = {
       lang: lang ?? DEFAULT_LANG,
       meta: twoslash ? { __raw: 'twoslash' } : undefined,
       themes: {
@@ -243,7 +259,15 @@ function traverseNode({
       // the default 500ms wall-clock limit makes output depend on gc pauses
       tokenizeTimeLimit: 0,
       transformers,
-    });
+    };
+
+    let hast;
+    try {
+      hast = codeToHast(internal, code, hastOptions);
+    } catch (err) {
+      if (err !== tooDeep) throw err;
+      hast = highlighter.codeToHast(code, hastOptions);
+    }
 
     const codeElement = hast.children[0] as Element;
     if (!codeElement) return;

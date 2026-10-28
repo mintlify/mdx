@@ -1,10 +1,14 @@
 import { serialize as baseSerialize } from 'next-mdx-remote-client/serialize';
-import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkSmartypants from 'remark-smartypants';
+import { VFile } from 'vfile';
 
-import { rehypeSyntaxHighlighting, RehypeSyntaxHighlightingOptions } from '../plugins/index.js';
+import {
+  rehypeKatexWithLocation,
+  rehypeSyntaxHighlighting,
+  RehypeSyntaxHighlightingOptions,
+} from '../plugins/index.js';
 import type { SerializeOptions } from '../types/index.js';
 
 export const serialize = async ({
@@ -13,16 +17,18 @@ export const serialize = async ({
   scope,
   parseFrontmatter = true,
   syntaxHighlightingOptions,
+  path,
 }: {
   source: string;
   mdxOptions?: SerializeOptions['mdxOptions'];
   scope?: SerializeOptions['scope'];
   parseFrontmatter?: SerializeOptions['parseFrontmatter'];
   syntaxHighlightingOptions?: RehypeSyntaxHighlightingOptions;
+  path?: string;
 }) => {
   try {
     return await baseSerialize({
-      source,
+      source: path ? new VFile({ value: source, path }) : source,
       options: {
         mdxOptions: {
           ...mdxOptions,
@@ -33,7 +39,7 @@ export const serialize = async ({
             ...(mdxOptions?.remarkPlugins || []),
           ],
           rehypePlugins: [
-            rehypeKatex,
+            rehypeKatexWithLocation,
             [rehypeSyntaxHighlighting, syntaxHighlightingOptions],
             ...(mdxOptions?.rehypePlugins || []),
           ],

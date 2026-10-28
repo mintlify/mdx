@@ -1167,6 +1167,7 @@ __metadata:
     typescript: "npm:^5.7.2"
     unified: "npm:^11.0.0"
     unist-util-visit: "npm:^5.0.0"
+    vfile: "npm:^6.0.0"
   peerDependencies:
     "@base-ui/react": ^1.6.0
     react: ^19.2.1

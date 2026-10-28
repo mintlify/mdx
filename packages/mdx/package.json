@@ -115,6 +115,7 @@
     "shiki": "^3.23.0",
     "twoslash": "^0.3.4",
     "unified": "^11.0.0",
-    "unist-util-visit": "^5.0.0"
+    "unist-util-visit": "^5.0.0",
+    "vfile": "^6.0.0"
   }
 }

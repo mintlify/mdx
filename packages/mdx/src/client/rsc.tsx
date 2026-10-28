@@ -1,11 +1,14 @@
 import { MDXRemote as BaseMDXRemote, MDXComponents } from 'next-mdx-remote-client/rsc';
 import { SerializeOptions } from 'next-mdx-remote-client/serialize';
-import rehypeKatex from 'rehype-katex';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
 import remarkSmartypants from 'remark-smartypants';
 
-import { rehypeSyntaxHighlighting, RehypeSyntaxHighlightingOptions } from '../plugins/index.js';
+import {
+  rehypeKatexWithLocation,
+  rehypeSyntaxHighlighting,
+  RehypeSyntaxHighlightingOptions,
+} from '../plugins/index.js';
 import { Popup, PopupContent, PopupTrigger } from '../ui/index.js';
 
 export async function MDXRemote({
@@ -44,7 +47,7 @@ export async function MDXRemote({
             ...(mdxOptions?.remarkPlugins || []),
           ],
           rehypePlugins: [
-            rehypeKatex,
+            rehypeKatexWithLocation,
             [rehypeSyntaxHighlighting, syntaxHighlightingOptions],
             ...(mdxOptions?.rehypePlugins || []),
           ],

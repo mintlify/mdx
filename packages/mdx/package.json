@@ -33,6 +33,10 @@
       "import": "./dist/plugins/index.js",
       "types": "./dist/plugins/index.d.ts"
     },
+    "./plugins/syntax-highlighting": {
+      "import": "./dist/plugins/rehype/rehypeSyntaxHighlightingBrowser.js",
+      "types": "./dist/plugins/rehype/rehypeSyntaxHighlightingBrowser.d.ts"
+    },
     "./plugins/shell-placeholder-transformer": {
       "import": "./dist/plugins/rehype/shell-placeholder-transformer.js",
       "types": "./dist/plugins/rehype/shell-placeholder-transformer.d.ts"

@@ -15,6 +15,7 @@ import {
   SHIKI_TRANSFORMERS,
   shikiColorReplacements,
 } from '../dist/plugins/rehype/shiki-constants.js';
+import { serialize } from '../dist/server/index.js';
 
 const long = 'const x = "' + 'a'.repeat(1200) + '";';
 
@@ -45,6 +46,24 @@ const blocks = [
   ['go', 'package main\n\nfunc main() {\n\tfmt.Println("世界")\n}'],
   ['diff', '--- a\n+++ b\n@@ -1 +1 @@\n-old\n+new'],
   ['c++', '#include <vector>\ntemplate <typename T> T f(T t) { return t; }'],
+  ['blade', '<div>{{ $value }}</div>'],
+  ['c', 'int main(void) { return 42; }'],
+  ['css', '.value { color: red; display: grid; }'],
+  ['c#', 'public record Value(int Id);'],
+  ['dart', 'final values = <int>[1, 2];'],
+  ['java', 'public class Value { public int id() { return 42; } }'],
+  ['jsx', 'export const Value = () => <div>value</div>;'],
+  ['kotlin', 'data class Value(val id: Int)'],
+  ['log', '2026-01-01 00:00:00 INFO ready'],
+  ['lua', 'local value = 42\nprint(value)'],
+  ['powershell', 'Get-Process | Where-Object { $_.Id -gt 42 }'],
+  ['ruby', 'items = [1, 2]\nitems.map { |item| item + 1 }'],
+  ['solidity', 'pragma solidity ^0.8.0;\ncontract Value { uint public id = 42; }'],
+  ['swift', 'struct Value { let id: Int }'],
+  ['toml', '[value]\nid = 42'],
+  ['markdown', '# Nested\n```ps1\nGet-Process | Select-Object Name\n```'],
+  ['mdx', '# Nested\n```ts\ntype Value = { id: number };\n```'],
+  ['haml', '%section\n  :markdown\n    # Nested\n    ```python\n    print("nested")\n    ```'],
   ['sql', "SELECT * FROM users WHERE name = 'x'; -- comment"],
   ['vue', '<template><div>{{ a }}</div></template>\n<script setup lang="ts">const a = 1</script>'],
   ['docker', 'FROM node:20\nRUN echo "hi"'],
@@ -140,6 +159,54 @@ async function check(order) {
       }
 }
 
+test('first compilation highlights twoslash documentation in another default language', async () => {
+  const source = [
+    '```ts twoslash',
+    '/**',
+    ' * Helper docs.',
+    ' * ```python',
+    ' * print("nested documentation")',
+    ' * ```',
+    ' */',
+    'function helper(value: number) { return value + 1; }',
+    'helper',
+    '// ^?',
+    '```',
+  ].join('\n');
+  const errors = [];
+  const original = console.error;
+  console.error = (...args) => errors.push(args);
+  let result;
+  try {
+    result = await serialize({
+      source,
+      syntaxHighlightingOptions: { linkMap: new Map([['helper', '#helper']]) },
+    });
+  } finally {
+    console.error = original;
+  }
+  assert.deepEqual(errors, []);
+  assert.ok('compiledSource' in result);
+  assert.match(result.compiledSource, /children: "print"/);
+  assert.match(result.compiledSource, /PopupContent/);
+  assert.match(result.compiledSource, /href: "#helper"/);
+});
+
+test('all default languages are ready before highlighting a mixed tree', async () => {
+  const defaults = DEFAULT_LANGS.map((lang) => {
+    const block = blocks.find(([name]) => name === lang);
+    assert.ok(block, `missing default fixture: ${lang}`);
+    return block;
+  });
+  const root = {
+    type: 'root',
+    children: defaults.map(([lang, code]) => tree(lang, code).children[0]),
+  };
+  await rehypeSyntaxHighlighting()(root);
+  for (const [index, [lang, code]] of defaults.entries())
+    assert.deepStrictEqual(root.children[index], await expected(lang, code, undefined, {}), lang);
+});
+
 test('single-pass highlighting matches shiki codeToHast', async () => {
   await check((items) => items);
   await check((items) => [...items].reverse());
@@ -208,19 +275,20 @@ test('the line cache stays bounded over many distinct lines', async () => {
 test('custom languages still highlight', async () => {
   const grammar = {
     name: 'pipeline',
+    aliases: ['pipe'],
     scopeName: 'source.pipeline',
+    embeddedLangs: ['javascript'],
     repository: {},
     patterns: [
       { match: '\\b(stage|run)\\b', name: 'keyword.control.pipeline' },
       { match: '"[^"]*"', name: 'string.quoted.double.pipeline' },
+      { begin: '^<script>$', end: '^</script>$', patterns: [{ include: 'source.js' }] },
     ],
   };
-  const code = 'stage "build"\nrun "make"';
-  const root = tree('pipeline', code);
-  await rehypeSyntaxHighlighting({ customLanguages: [JSON.stringify(grammar)] })(root);
+  const code = 'stage "build"\nrun "make"\n<script>\nconst value = 42;\n</script>';
   const custom = await createHighlighter({
     themes: structuredClone(DEFAULT_THEMES),
-    langs: [grammar],
+    langs: [...DEFAULT_LANGS, grammar],
   });
   const want = custom.codeToHast(code, {
     lang: 'pipeline',
@@ -235,5 +303,11 @@ test('custom languages still highlight', async () => {
   want.properties.language = 'pipeline';
   want.children[0].data = {};
   want.children[0].properties.language = 'pipeline';
-  assert.deepStrictEqual(root.children[0], want);
+  for (const lang of ['pipeline', 'pipe']) {
+    const root = tree(lang, code);
+    await rehypeSyntaxHighlighting({ customLanguages: [JSON.stringify(grammar)] })(root);
+    want.properties.language = lang;
+    want.children[0].properties.language = lang;
+    assert.deepStrictEqual(root.children[0], want);
+  }
 });

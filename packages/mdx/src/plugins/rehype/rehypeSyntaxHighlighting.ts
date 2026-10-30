@@ -60,7 +60,7 @@ async function getHighlighter(): Promise<Highlighter> {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
       themes: DEFAULT_THEMES,
-      langs: DEFAULT_LANGS,
+      langs: [() => import('./shiki/default-languages.js')],
     });
   }
   return highlighterPromise;

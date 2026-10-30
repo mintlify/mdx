@@ -1,3 +1,4 @@
+import { rehypeSyntaxHighlighting as browserSyntaxHighlighting } from '@mintlify/mdx/plugins/syntax-highlighting';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { setFlagsFromString } from 'node:v8';
@@ -45,6 +46,10 @@ const blocks = [
   ['go', 'package main\n\nfunc main() {\n\tfmt.Println("世界")\n}'],
   ['diff', '--- a\n+++ b\n@@ -1 +1 @@\n-old\n+new'],
   ['c++', '#include <vector>\ntemplate <typename T> T f(T t) { return t; }'],
+  ['ts', '  const value = "<img src=x>&amp;</code>";  \n\n'],
+  ['PowerShell', 'Get-Process | Select-Object Name\n'],
+  ['jsonc', '// comment\n{"ok": true}\n'],
+  ['200', '{"status": 200}\n'],
   ['sql', "SELECT * FROM users WHERE name = 'x'; -- comment"],
   ['vue', '<template><div>{{ a }}</div></template>\n<script setup lang="ts">const a = 1</script>'],
   ['docker', 'FROM node:20\nRUN echo "hi"'],
@@ -95,6 +100,7 @@ function tree(lang, code, meta) {
 }
 
 async function expected(lang, code, meta, options) {
+  lang = lang.toLowerCase();
   lang = DEFAULT_LANG_ALIASES[lang] ?? 'text';
   if (!reference.getLoadedLanguages().includes(lang)) await reference.loadLanguage(lang);
   for (const theme of [options.theme, options.themes?.light, options.themes?.dark])
@@ -137,8 +143,35 @@ async function check(order) {
           await expected(lang, code, meta, options),
           `${lang} ${JSON.stringify(options)} ${meta}`
         );
+        const browserRoot = tree(lang, code, meta);
+        await browserSyntaxHighlighting(options)(browserRoot);
+        assert.deepStrictEqual(
+          browserRoot,
+          root,
+          `browser ${lang} ${JSON.stringify(options)} ${meta}`
+        );
       }
 }
+
+test('server Twoslash preserves hover markup and declared links', async () => {
+  const linkMap = new Map();
+  const root = tree(
+    'ts',
+    '// @link value https://example.com/value\nconst value = 42;\n//    ^?\nvalue;\n',
+    'twoslash'
+  );
+  await rehypeSyntaxHighlighting({ linkMap })(root);
+  assert.equal(linkMap.get('value'), 'https://example.com/value');
+  assert.match(JSON.stringify(root), /twoslash/);
+  assert.match(JSON.stringify(root), /https:\/\/example\.com\/value/);
+});
+
+test('browser highlighting explicitly rejects Twoslash metadata', async () => {
+  await assert.rejects(
+    browserSyntaxHighlighting()(tree('ts', 'const value = 42;', 'title="value.ts" TwOsLaSh')),
+    /Twoslash is not supported/
+  );
+});
 
 test('single-pass highlighting matches shiki codeToHast', async () => {
   await check((items) => items);
@@ -158,9 +191,11 @@ test('several code blocks in one tree match shiki codeToHast', async () => {
 
 test('deeply nested code matches shiki codeToHast', async () => {
   const code = Array.from({ length: 6 }, () => '['.repeat(900)).join('\n');
-  const root = tree('json', code);
-  await rehypeSyntaxHighlighting()(root);
-  assert.deepStrictEqual(root.children[0], await expected('json', code, undefined, {}));
+  for (const plugin of [rehypeSyntaxHighlighting, browserSyntaxHighlighting]) {
+    const root = tree('json', code);
+    await plugin()(root);
+    assert.deepStrictEqual(root.children[0], await expected('json', code, undefined, {}));
+  }
 });
 
 test('deeply nested blocks highlight about as fast as shiki codeToHast', async () => {
@@ -236,4 +271,7 @@ test('custom languages still highlight', async () => {
   want.children[0].data = {};
   want.children[0].properties.language = 'pipeline';
   assert.deepStrictEqual(root.children[0], want);
+  const browserRoot = tree('pipeline', code);
+  await browserSyntaxHighlighting({ customLanguages: [JSON.stringify(grammar)] })(browserRoot);
+  assert.deepStrictEqual(browserRoot.children[0], want);
 });

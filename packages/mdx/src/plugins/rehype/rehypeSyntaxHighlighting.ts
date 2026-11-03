@@ -94,7 +94,9 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
 ) => {
   return async (tree) => {
     const nodesToProcess: Promise<void>[] = [];
-    const customLanguageNames: string[] = [];
+    // lowercased name, display name or alias -> the name shiki registered the grammar under;
+    // getLanguage lowercases the fence language, so lookups have to be case-insensitive
+    const customLanguageNames = new Map<string, string>();
 
     const themesToLoad: ShikiTheme[] = [];
     if (options.themes) {
@@ -126,7 +128,9 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         }
         await loadLanguage(highlighter, lang);
         const possibleNames = [lang.name, lang.displayName, ...(lang.aliases ?? [])];
-        customLanguageNames.push(...possibleNames.filter((l) => l != undefined));
+        for (const name of possibleNames) {
+          if (name != undefined) customLanguageNames.set(name.toLowerCase(), lang.name);
+        }
       }) ?? []),
     ]);
 
@@ -158,17 +162,17 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         getLanguage(child, DEFAULT_LANG_ALIASES) ??
         DEFAULT_LANG;
 
+      const customLang = customLanguageNames.get(lang);
+      if (customLang) lang = customLang as ShikiLang;
+
       const needsLanguage =
-        !DEFAULT_LANGS.includes(lang) &&
-        !customLanguageNames.includes(lang) &&
-        UNIQUE_LANGS.includes(lang);
-      if (!needsLanguage && !UNIQUE_LANGS.includes(lang) && !customLanguageNames.includes(lang)) {
+        !DEFAULT_LANGS.includes(lang) && !customLang && UNIQUE_LANGS.includes(lang);
+      if (!needsLanguage && !UNIQUE_LANGS.includes(lang) && !customLang) {
         lang = DEFAULT_LANG;
       }
 
       const twoslash = wantsTwoslash(node) ? loadTwoslash() : undefined;
-      const internal =
-        twoslash || customLanguageNames.includes(lang) ? highlighter.getInternalContext() : fast;
+      const internal = twoslash || customLang ? highlighter.getInternalContext() : fast;
       if (!needsLanguage && !twoslash) {
         traverseNode({ node, index, parent, highlighter, internal, lang, options });
         return;

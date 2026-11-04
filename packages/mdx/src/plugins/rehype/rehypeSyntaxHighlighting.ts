@@ -159,6 +159,7 @@ export const rehypeSyntaxHighlighting: Plugin<[RehypeSyntaxHighlightingOptions?]
         DEFAULT_LANG;
 
       const needsLanguage =
+        lang !== DEFAULT_LANG &&
         !DEFAULT_LANGS.includes(lang) &&
         !customLanguageNames.includes(lang) &&
         UNIQUE_LANGS.includes(lang);

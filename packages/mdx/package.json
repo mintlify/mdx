@@ -41,6 +41,10 @@
       "import": "./dist/plugins/rehype/shiki-constants.js",
       "types": "./dist/plugins/rehype/shiki-constants.d.ts"
     },
+    "./languages": {
+      "import": "./dist/plugins/rehype/shiki-languages.js",
+      "types": "./dist/plugins/rehype/shiki-languages.d.ts"
+    },
     "./ui": {
       "import": "./dist/ui/index.js",
       "types": "./dist/ui/index.d.ts"

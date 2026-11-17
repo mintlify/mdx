@@ -21,7 +21,7 @@
   </p>
   <p>
 
-![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen?logo=github) [![Tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Fmintlify.com%2F)](https://twitter.com/intent/tweet?url=&text=Check%20out%20%40mintlify)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen?logo=github)](https://github.com/mintlify/mdx/issues) [![Tweet](https://img.shields.io/twitter/url?url=https%3A%2F%2Fmintlify.com%2F)](https://twitter.com/intent/tweet?url=&text=Check%20out%20%40mintlify)
 
   </p>
 </div>

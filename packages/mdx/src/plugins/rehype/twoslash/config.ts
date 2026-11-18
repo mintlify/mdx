@@ -9,6 +9,7 @@ import { createTwoslasher } from 'twoslash';
 import ts from 'typescript';
 
 import { createFileSystemTypesCache } from './cache-fs.js';
+import { createSandboxedTypeScript, restrictTwoslasher } from './sandbox.js';
 
 export { transformerTwoslash } from '@shikijs/twoslash';
 
@@ -21,14 +22,19 @@ let sharedTwoslasher: ReturnType<typeof createTwoslasher> | undefined;
 
 function getSharedTwoslasher(): ReturnType<typeof createTwoslasher> {
   if (!sharedTwoslasher) {
-    sharedTwoslasher = createTwoslasher({
-      compilerOptions: { moduleResolution: ts.ModuleResolutionKind.Bundler },
-    });
+    const tsModule = createSandboxedTypeScript(ts);
+    sharedTwoslasher = restrictTwoslasher(
+      createTwoslasher({
+        tsModule,
+        compilerOptions: { moduleResolution: ts.ModuleResolutionKind.Bundler },
+      }),
+      tsModule
+    );
   }
   return sharedTwoslasher;
 }
 
-const sharedTypesCache = createFileSystemTypesCache({ salt: ts.version });
+const sharedTypesCache = createFileSystemTypesCache({ salt: `${ts.version}:sandboxed` });
 
 function onTwoslashError(err: unknown, code: string, lang: string) {
   console.error(JSON.stringify({ err, code, lang }));

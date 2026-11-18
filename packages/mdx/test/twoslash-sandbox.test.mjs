@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -15,6 +15,10 @@ const secretJson = join(secretDir, 'manifest.json');
 const secretTs = join(secretDir, 'secret.ts');
 writeFileSync(secretJson, JSON.stringify({ previewModeSigningKey: secret }));
 writeFileSync(secretTs, `export const key = '${secret}';`);
+const symlinkedPackage = join(secretDir, 'node_modules', 'leaky');
+mkdirSync(symlinkedPackage, { recursive: true });
+symlinkSync(secretJson, join(symlinkedPackage, 'package.json'));
+symlinkSync(secretTs, join(symlinkedPackage, 'index.d.ts'));
 
 const emitImport = (file) => `// @module: amd
 // @moduleResolution: node10
@@ -40,7 +44,13 @@ test('sandboxed compiler cannot read server-local files', () => {
     tsModule: createSandboxedTypeScript(ts),
     compilerOptions: { moduleResolution: ts.ModuleResolutionKind.Bundler },
   });
-  for (const file of [secretJson, secretTs, `${secretDir}/node_modules/../manifest.json`]) {
+  for (const file of [
+    secretJson,
+    secretTs,
+    `${secretDir}/node_modules/../manifest.json`,
+    join(symlinkedPackage, 'package.json'),
+    join(symlinkedPackage, 'index.d.ts'),
+  ]) {
     assert.doesNotMatch(sandboxed(emitImport(file), 'ts').code, new RegExp(secret));
   }
 });

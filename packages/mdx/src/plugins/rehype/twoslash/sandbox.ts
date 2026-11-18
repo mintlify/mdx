@@ -1,3 +1,4 @@
+import { realpathSync } from 'node:fs';
 import * as path from 'node:path';
 import {
   findFlagNotations,
@@ -48,17 +49,27 @@ export function createSandboxedTypeScript(tsModule: typeof ts): TypeScriptModule
   const nodeSys = tsModule.sys;
   const libDirectory = path.dirname(tsModule.getDefaultLibFilePath({}));
 
-  const canReadFile = (fileName: string) => {
-    const resolved = path.resolve(fileName);
-    if (isWithin(libDirectory, resolved)) return true;
-    if (!isInNodeModules(resolved)) return false;
-    return DECLARATION_FILE.test(resolved) || path.basename(resolved) === 'package.json';
+  const isAllowedFile = (target: string) => {
+    if (isWithin(libDirectory, target)) return true;
+    if (!isInNodeModules(target)) return false;
+    return DECLARATION_FILE.test(target) || path.basename(target) === 'package.json';
   };
 
-  const canReadDirectory = (directory: string) => {
-    const resolved = path.resolve(directory);
-    return isWithin(libDirectory, resolved) || isInNodeModules(resolved);
+  const isAllowedDirectory = (target: string) =>
+    isWithin(libDirectory, target) || isInNodeModules(target);
+
+  const withRealPath = (target: string, isAllowed: (target: string) => boolean) => {
+    const resolved = path.resolve(target);
+    if (!isAllowed(resolved)) return false;
+    try {
+      return isAllowed(realpathSync(resolved));
+    } catch {
+      return true;
+    }
   };
+
+  const canReadFile = (fileName: string) => withRealPath(fileName, isAllowedFile);
+  const canReadDirectory = (directory: string) => withRealPath(directory, isAllowedDirectory);
 
   const sys: ts.System = {
     ...nodeSys,

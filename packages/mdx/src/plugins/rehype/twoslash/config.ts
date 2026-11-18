@@ -9,7 +9,7 @@ import { createTwoslasher } from 'twoslash';
 import ts from 'typescript';
 
 import { createFileSystemTypesCache } from './cache-fs.js';
-import { createSandboxedTypeScript, withBlockedFlags } from './sandbox.js';
+import { createSandboxedTypeScript, restrictTwoslasher } from './sandbox.js';
 
 export { transformerTwoslash } from '@shikijs/twoslash';
 
@@ -23,7 +23,7 @@ let sharedTwoslasher: ReturnType<typeof createTwoslasher> | undefined;
 function getSharedTwoslasher(): ReturnType<typeof createTwoslasher> {
   if (!sharedTwoslasher) {
     const tsModule = createSandboxedTypeScript(ts);
-    sharedTwoslasher = withBlockedFlags(
+    sharedTwoslasher = restrictTwoslasher(
       createTwoslasher({
         tsModule,
         compilerOptions: { moduleResolution: ts.ModuleResolutionKind.Bundler },

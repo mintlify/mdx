@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, symlinkSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { createTwoslasher } from 'twoslash';
 import ts from 'typescript';
 
@@ -15,10 +16,19 @@ const secretJson = join(secretDir, 'manifest.json');
 const secretTs = join(secretDir, 'secret.ts');
 writeFileSync(secretJson, JSON.stringify({ previewModeSigningKey: secret }));
 writeFileSync(secretTs, `export const key = '${secret}';`);
-const symlinkedPackage = join(secretDir, 'node_modules', 'leaky');
-mkdirSync(symlinkedPackage, { recursive: true });
+const outsidePackage = join(secretDir, 'node_modules', 'outside');
+mkdirSync(outsidePackage, { recursive: true });
+writeFileSync(join(outsidePackage, 'index.d.ts'), `export declare const key: '${secret}';`);
+writeFileSync(join(outsidePackage, 'package.json'), JSON.stringify({ name: secret }));
+const symlinkedPackage = mkdtempSync(
+  join(fileURLToPath(new URL('../node_modules/', import.meta.url)), '.twoslash-sandbox-')
+);
 symlinkSync(secretJson, join(symlinkedPackage, 'package.json'));
 symlinkSync(secretTs, join(symlinkedPackage, 'index.d.ts'));
+test.after(() => {
+  rmSync(symlinkedPackage, { recursive: true, force: true });
+  rmSync(secretDir, { recursive: true, force: true });
+});
 
 const emitImport = (file) => `// @module: amd
 // @moduleResolution: node10
@@ -48,6 +58,8 @@ test('sandboxed compiler cannot read server-local files', () => {
     secretJson,
     secretTs,
     `${secretDir}/node_modules/../manifest.json`,
+    join(outsidePackage, 'package.json'),
+    join(outsidePackage, 'index.d.ts'),
     join(symlinkedPackage, 'package.json'),
     join(symlinkedPackage, 'index.d.ts'),
   ]) {
@@ -55,9 +67,40 @@ test('sandboxed compiler cannot read server-local files', () => {
   }
 });
 
-test('path-redirecting inline flags are rejected', () => {
+test('only allowlisted inline flags are accepted', () => {
   assert.throws(() => twoslasher(emitImport(secretJson), 'ts'), /@outFile, @showEmittedFile/);
   assert.throws(() => twoslasher(`// @paths: {"*": ["/etc/*"]}\nconst a = 1;`, 'ts'), /@paths/);
+  assert.throws(
+    () => twoslasher(`// @declarationDir: /tmp\nconst a = 1;`, 'ts'),
+    /@declarationDir/
+  );
+  const result = twoslasher(
+    `// @strict: false\n// @target: es2015\n// @errors: 2322\nconst a: number = 'a';`,
+    'ts'
+  );
+  assert.equal(result.errors[0].code, 2322);
+});
+
+test('virtual files do not leak between runs after a failure', () => {
+  assert.throws(() =>
+    twoslasher(
+      `// @filename: leaked.ts\nexport const k = '${secret}';\n// @filename: index.ts\nconst x: number = 'a';`,
+      'ts'
+    )
+  );
+  const result = twoslasher(
+    `// @noErrors\nimport { k } from './leaked';\nconst v = k;\n//    ^?`,
+    'ts'
+  );
+  assert.doesNotMatch(result.queries[0].text, new RegExp(secret));
+});
+
+test('sandboxed system cannot modify the file system', () => {
+  const { sys } = createSandboxedTypeScript(ts);
+  assert.throws(() => sys.writeFile(join(secretDir, 'x'), ''));
+  assert.throws(() => sys.createDirectory(join(secretDir, 'x')));
+  assert.throws(() => sys.deleteFile?.(secretJson));
+  assert.throws(() => sys.setModifiedTime?.(secretJson, new Date()));
 });
 
 test('type declarations from node_modules still resolve', () => {
